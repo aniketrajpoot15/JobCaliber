@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 12 |
-| **Remaining Steps** | 135 |
-| **Overall Progress** | **8%** |
+| **Completed Steps** | 13 |
+| **Remaining Steps** | 134 |
+| **Overall Progress** | **9%** |
 | **Current Phase** | Phase 1 — Architecture (In Progress) |
-| **Current Step** | Step 1.2 — Define Application collection schema |
-| **Current Status** | `READY` (Step 1.1 Complete; Awaiting approval for Step 1.2) |
+| **Current Step** | Step 1.3 — Define InterviewRound collection schema |
+| **Current Status** | `READY` (Step 1.2 Complete; Awaiting approval for Step 1.3) |
 
 ```
-Progress: [########········································] 8%
-           12 / 147 steps
+Progress: [#########·······································] 9%
+           13 / 147 steps
 ```
 
 ---
@@ -32,7 +32,7 @@ Progress: [########······························�
 | Phase | Total Steps | Completed | Remaining | Progress | Status |
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
-| Phase 1: Architecture | 15 | 1 | 14 | 7% | 🟡 In Progress |
+| Phase 1: Architecture | 15 | 2 | 13 | 13% | 🟡 In Progress |
 | Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
@@ -44,30 +44,31 @@ Progress: [########······························�
 
 ## Next Step
 
-### Step 1.2 — Define Application collection schema
+### Step 1.3 — Define InterviewRound collection schema
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 1: Architecture |
-| **Objective** | Write the complete Mongoose schema definition for the `applications` collection. |
-| **Why** | The most complex collection — 15+ fields, enum validation, computed virtuals, multiple indexes. |
+| **Objective** | Write the Mongoose schema for `interviewrounds` collection. |
+| **Why** | Links applications to their interview rounds. Tracks debrief completion status. |
 | **Files involved** | `docs/phase-1/DATABASE_SCHEMA.md` (to be updated) |
-| **Expected result** | Full schema with status enum, optional fields, timestamps, indexes for search/filter. |
-| **Verification** | Schema covers FR-02 through FR-06 requirements. All 7 statuses present in enum. |
+| **Expected result** | Schema with roundType enum, scheduledDate, selfRating, debriefCompleted flag. |
+| **Verification** | Schema covers FR-07 and FR-08 requirements. roundType enum has all 5 types. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 1.1 — Define User collection schema
+### Step 1.2 — Define Application collection schema
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/phase-1/DATABASE_SCHEMA.md` (created), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`
+- **Files Created/Modified:** `docs/phase-1/DATABASE_SCHEMA.md` (updated — Section 3), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `TECH_LEARNING.md`
 - **Key Concepts Specified:**
-  - Multi-tier defense strategy: Client-side validation → express-validator payload sanitization → Mongoose schema constraints → MongoDB unique index.
-  - User model structure: `fullName`, sanitized `email`, `passwordHash` (`select: false`), optional `targetRole`, and configurable `staleThresholdDays` (default 14, range 7-45).
-  - Security boundaries: `select: false` on `passwordHash` with custom `toJSON` serialization transform to guarantee credentials never leak to API consumers.
-  - Tenant isolation anchoring: `User._id` serves as the tenant boundary for all downstream collections (`userId: req.user._id`).
+  - **Enum Validation in Mongoose:** How `enum: { values: [...], message: '...' }` enforces a fixed set of allowed values at the database layer. The 7-stage pipeline status and `workMode`/`source` dropdowns all use enums to prevent invalid data from entering the system.
+  - **Compound Indexes & Left-Prefix Rule:** How MongoDB compound indexes work left-to-right, why `userId` must be the first key in every compound index for tenant isolation, and how each index maps to a specific query pattern (pipeline view, duplicate detection, date filtering, archive filtering, text search).
+  - **Persisted Computed Fields vs Virtuals:** The design decision to persist `isStale` as a real field rather than computing it on-the-fly as a Mongoose virtual. Trade-off: slightly stale data that needs recalculation triggers, but enables efficient filtering and batch operations.
+  - **Soft Delete Pattern (`isArchived`):** Why archiving is preferred over hard-deleting documents — preserving analytics integrity (funnel conversion rates would be corrupted by missing documents).
+  - **Empty String vs `null` for Optional Enums:** Using `''` as the "not specified" default for optional enum fields (`workMode`, `source`) to avoid `null` checks throughout the codebase while still passing Mongoose enum validation.
 
 ---
 
@@ -75,6 +76,7 @@ Progress: [########······························�
 
 | Step | Title | Date |
 |---|---|---|
+| 1.2 | Define Application collection schema | 2026-09-26 |
 | 1.1 | Define User collection schema | 2026-09-26 |
 | 0.11 | Granular task decomposition & project setup files | 2026-09-24 |
 | 0.10 | Create TASKS.md | 2026-09-24 |
@@ -100,9 +102,9 @@ None.
 
 | Step | Title | Phase |
 |---|---|---|
-| 1.2 | Define Application collection schema | Phase 1: Architecture |
 | 1.3 | Define InterviewRound collection schema | Phase 1: Architecture |
 | 1.4 | Define InterviewQuestion and ProblemLog schemas | Phase 1: Architecture |
+| 1.5 | Define database relationships and index strategy | Phase 1: Architecture |
 
 ---
 
@@ -111,7 +113,7 @@ None.
 | Milestone | Steps Complete | Target | Status |
 |---|---|---|---|
 | 📄 Documentation complete | 11/11 | Phase 0 | ✅ Complete |
-| 📐 Architecture complete | 1/15 | Phase 1 | 🟡 In Progress |
+| 📐 Architecture complete | 2/15 | Phase 1 | 🟡 In Progress |
 | 🔐 Auth working (end-to-end) | 0/36 | Phase 2 | ⬜ |
 | 📋 Pipeline working (Kanban + Table) | 0/31 | Phase 3 | ⬜ |
 | ⏰ Stale + Action Center working | 0/9 | Phase 4 | ⬜ |

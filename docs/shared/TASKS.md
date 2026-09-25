@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (1/15 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (2/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/phase-0/PRD.md` for requirements, `docs/phase-0/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -160,7 +160,7 @@
 - **Expected Result:** Full schema with status enum, optional fields, timestamps, indexes for search/filter.
 - **Verification:** Schema covers FR-02 through FR-06 requirements. All 7 statuses present in enum.
 - **Learn/Review:** Mongoose enums, compound indexes, virtual fields, timestamps option.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.3 — Define InterviewRound collection schema
 - **Objective:** Write the Mongoose schema for `interviewrounds` collection.

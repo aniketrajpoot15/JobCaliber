@@ -4,7 +4,7 @@
 
 > **Personal Study & Engineering Reference Guide**  
 > **Rule:** Only technologies from COMPLETED project steps are documented here. No premature documentation.  
-> **Last Updated:** 2026-09-25 (Synchronized with Phase 0 completion — Step 0.11)
+> **Last Updated:** 2026-09-26 (Synchronized with Phase 1 — Step 1.2 complete)
 
 ---
 
@@ -12,15 +12,16 @@
 
 | Metric | Value |
 |---|---|
-| **Technologies Encountered & In Use** | 1 |
-| **Technologies Currently Being Learned** | 0 |
-| **Active Focus** | Version Control & Repository Hygiene (Git / `.gitignore`) |
+| **Technologies Encountered & In Use** | 2 |
+| **Technologies Currently Being Learned** | 1 |
+| **Active Focus** | Database Schema Design (MongoDB / Mongoose) |
 
 ### Technology Status Matrix
 
 | Technology | Category | First Introduced In | Latest Active Step | Status |
 |---|---|---|---|---|
 | **Git (`.gitignore`)** | Developer Tooling / Version Control | Step 0.11 | Step 0.11 | `INTRODUCED / IN USE` |
+| **MongoDB / Mongoose (Schema Design)** | Database / ODM | Step 1.1 | Step 1.2 | `LEARNING / DESIGNING` |
 
 > [!NOTE]
 > *Subsequent technologies (Node.js, Express, MongoDB, Mongoose, React, Vite, Tailwind CSS, JWT) are part of the planned architecture but have NOT yet been used in completed implementation steps. Per project rules, they will be documented only when their respective implementation steps are verified as complete.*
@@ -350,3 +351,283 @@ User runs: `git add .`
 - [Git SCM - .gitignore Man Page](https://git-scm.com/docs/gitignore)
 - [Pro Git Book — Chapter 10: Git Internals](https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
 - [GitHub Documentation on Ignoring Files](https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files)
+
+---
+---
+
+# MongoDB / Mongoose (Schema Design)
+
+## Status
+`LEARNING / DESIGNING`
+
+## Introduced By
+**Step 1.1 — Define User collection schema**
+
+## Used In Completed Steps
+
+| Step | Phase | What Was Done | Technology Aspects Used |
+|---|---|---|---|
+| **Step 1.1** | Phase 1: Architecture | Designed the `users` collection schema | Schema field types, `required`, `trim`, `select: false`, `toJSON` transform, unique indexes, email regex validation |
+| **Step 1.2** | Phase 1: Architecture | Designed the `applications` collection schema | Enums, compound indexes, left-prefix rule, ObjectId references, computed persisted fields (`isStale`), soft delete (`isArchived`), text indexes |
+
+## Used In JobCaliber
+In JobCaliber, MongoDB is our database and Mongoose is the ODM (Object Data Modeling) library that sits between our Express server and MongoDB. In Steps 1.1–1.2, we're not writing actual code yet — we're *designing* the schemas that will become our Mongoose models in Phase 2. Think of this like drawing the blueprint before building the house.
+
+---
+
+## What Even Is a Schema? (The Mental Model)
+
+Imagine a spreadsheet. Each *row* is a document (like a single job application). Each *column* is a field (like `companyName`, `status`, `appliedDate`). A **schema** is like the column headers + the rules for each column:
+
+- Column "companyName" → must be a String, must not be empty, max 200 characters
+- Column "status" → must be one of exactly 7 values (Saved, Applied, etc.)
+- Column "appliedDate" → must be a Date, defaults to today
+
+Without a schema, MongoDB would let you store *anything* in any shape — a document could have `company_name` in one row and `companyName` in another, with no error. Mongoose schemas prevent that chaos.
+
+```javascript
+// This is what a basic Mongoose schema looks like:
+const applicationSchema = new mongoose.Schema({
+  companyName: {
+    type: String,       // What kind of data
+    required: true,     // Can't be missing
+    trim: true,         // Removes whitespace from edges
+    maxlength: 200      // Maximum 200 characters
+  }
+});
+```
+
+---
+
+## Concept 1: Enums — Restricting a Field to a Fixed Set of Values
+
+### What's the Problem?
+If `status` is a free-text String, users (or bugs) could set it to anything: `"applied"`, `"APPLIED"`, `"applieed"`, `"In Progress"`, `"rejected probably"`. This would destroy analytics — how do you count applications in the "Applied" stage if it's spelled 10 different ways?
+
+### The Solution: `enum`
+Mongoose `enum` restricts a String field to an explicit whitelist of allowed values:
+
+```javascript
+status: {
+  type: String,
+  required: true,
+  default: 'Saved',
+  enum: {
+    values: ['Saved', 'Applied', 'OA / Screening', 'Interviewing', 'Offer', 'Rejected', 'Ghosted'],
+    message: '{VALUE} is not a valid application status'
+  }
+}
+```
+
+### What Happens If You Try to Save an Invalid Value?
+Mongoose throws a **ValidationError** before the document ever reaches MongoDB:
+```
+ValidationError: `"In Progress" is not a valid application status`
+```
+The save is rejected. The invalid data never enters the database.
+
+### Why Is This Important for JobCaliber?
+Our funnel analytics count applications per stage using MongoDB's `$group` aggregation. If statuses aren't consistent, the funnel breaks. Enums guarantee consistency.
+
+---
+
+## Concept 2: ObjectId References — How Collections Talk to Each Other
+
+### The Problem
+MongoDB is a *document* database — there are no JOINs like in SQL. So how does an `Application` document know which `User` it belongs to?
+
+### The Solution: ObjectId Foreign Keys
+Every MongoDB document has a unique `_id` (a 12-byte ObjectId). We store the user's `_id` inside the application document:
+
+```javascript
+userId: {
+  type: mongoose.Schema.Types.ObjectId,  // Stores a reference to another document
+  ref: 'User',                           // Points to the User model
+  required: true
+}
+```
+
+### How It Works
+When User "Arjun" (with `_id: 507f1f77bcf86cd799439011`) creates an application, the application document stores:
+```json
+{ "userId": "507f1f77bcf86cd799439011", "companyName": "Google", ... }
+```
+
+Now, to get all of Arjun's applications:
+```javascript
+Application.find({ userId: '507f1f77bcf86cd799439011' })
+```
+
+### The `ref: 'User'` Part
+The `ref` tells Mongoose which model this ObjectId points to. This enables `.populate()` — a Mongoose feature that replaces the ObjectId with the actual User document:
+```javascript
+// Without populate: { userId: '507f1f...' }
+// With populate:    { userId: { fullName: 'Arjun', email: 'arjun@...' } }
+const app = await Application.findById(id).populate('userId');
+```
+We probably won't use `.populate()` often in JobCaliber because the logged-in user's info is already available from `req.user` (set by the auth middleware). But it's good to understand.
+
+---
+
+## Concept 3: Compound Indexes — Making Queries Fast
+
+### The Problem
+Imagine you have 10,000 application documents in MongoDB. When you run:
+```javascript
+Application.find({ userId: '507f...', status: 'Applied' })
+```
+Without an index, MongoDB performs a **collection scan** — it reads ALL 10,000 documents one by one to check which ones match. That's slow.
+
+### The Solution: Indexes
+An index is like the index at the back of a textbook. Instead of reading every page to find "Graphs", you look up "Graphs" in the index and jump directly to page 142.
+
+A **compound index** indexes multiple fields together:
+```javascript
+applicationSchema.index({ userId: 1, status: 1 });
+```
+
+### The Left-Prefix Rule (CRITICAL to understand)
+A compound index `{ userId: 1, status: 1 }` can efficiently answer:
+- ✅ Queries on `userId` alone → `find({ userId: '...' })`
+- ✅ Queries on `userId` AND `status` → `find({ userId: '...', status: 'Applied' })`
+- ❌ Queries on `status` alone → `find({ status: 'Applied' })` ← **cannot use this index!**
+
+Why? Think of it like a phone book sorted by `LastName, FirstName`. You can quickly find all people named "Patel" (last name). You can also find "Patel, Arjun" (both). But you **cannot** efficiently find all people named "Arjun" (first name only) because the book is organized by last name first.
+
+### Why `userId` Is Always First in Our Indexes
+JobCaliber enforces **tenant isolation** — every query must include `userId`. So `userId` is always present. Putting it first in the compound index means every query benefits from the index.
+
+---
+
+## Concept 4: Persisted Computed Fields vs Virtual Fields
+
+### The Scenario
+The `isStale` field tells us whether an application has been sitting in `Applied` or `OA / Screening` for too long. We *could* compute this on-the-fly every time:
+
+```javascript
+// Virtual approach (NOT what we chose):
+applicationSchema.virtual('isStale').get(function () {
+  const days = (Date.now() - this.lastStatusUpdate) / 86400000;
+  return ['Applied', 'OA / Screening'].includes(this.status) && days >= 14;
+});
+```
+
+### Problem with Virtuals
+- **Can't filter on them:** `Application.find({ isStale: true })` won't work because virtual fields don't exist in MongoDB — they're calculated in JavaScript after the data is fetched.
+- **Can't display them in bulk efficiently:** For a Kanban board showing 100+ cards, every card would need to recalculate staleness.
+
+### Our Decision: Persist It
+We store `isStale` as a real Boolean field in MongoDB. This means:
+- ✅ We CAN filter: `Application.find({ isStale: true })` works and is fast
+- ✅ We CAN display in bulk: just read the field, no calculation needed
+- ⚠️ But it can become stale itself (ironic!) — an application might turn stale overnight, but the field still says `false` until we recalculate it
+
+### How We Handle the Staleness of Staleness
+Two recalculation triggers:
+1. **On-write:** When a status changes, recalculate `isStale` immediately
+2. **On-read:** When the application list is fetched, recalculate `isStale` for all returned documents (catches overnight staleness)
+
+This is a common pattern called **"lazy evaluation with eager refresh"** — you persist the value for fast reads, but refresh it whenever someone looks at the data.
+
+---
+
+## Concept 5: Soft Delete with `isArchived`
+
+### The Problem
+When a user "deletes" an application, should we actually remove it from MongoDB?
+
+### Why Hard Delete Is Dangerous
+Imagine a user applies to 50 companies. 20 reject them. If they delete the rejected ones, their funnel analytics now show:
+- Applied: 50
+- Rejected: 0 ❌ (misleading!)
+
+The data is gone forever. The funnel is corrupted.
+
+### The Soft Delete Pattern
+Instead of deleting, we set `isArchived: true`. The application disappears from the Kanban board, but it's still in the database for analytics.
+
+Every default list query includes:
+```javascript
+Application.find({ userId: req.user._id, isArchived: false })
+```
+
+And to view archived applications:
+```javascript
+Application.find({ userId: req.user._id, isArchived: true })
+```
+
+---
+
+## Concept 6: Empty String `''` vs `null` for Optional Fields
+
+### The Dilemma
+The `workMode` field is optional. If a user doesn't specify it, what should the value be?
+
+Option A: `null` (no value at all)
+Option B: `''` (empty string)
+
+### Why We Chose Empty String
+With `null`, every place in the code that uses `workMode` needs a null check:
+```javascript
+// With null — annoying, error-prone:
+if (app.workMode !== null && app.workMode !== undefined) {
+  display(app.workMode);
+}
+```
+
+With `''`, it's simpler:
+```javascript
+// With '' — clean:
+if (app.workMode) {
+  display(app.workMode);
+}
+```
+
+In JavaScript, empty string `''` is falsy, so `if (app.workMode)` naturally skips "not specified" values. And Mongoose enum validation includes `''` in the allowed values, so it passes validation cleanly.
+
+---
+
+## Concept 7: Text Indexes — How MongoDB Search Works
+
+For the search bar (typing "google" to find applications at Google), we use a MongoDB **text index**:
+
+```javascript
+applicationSchema.index({ companyName: 'text', roleTitle: 'text' });
+```
+
+### What a Text Index Does
+MongoDB tokenizes (splits into words) and stems (reduces to root form) the indexed fields. Then when you search:
+```javascript
+Application.find({ $text: { $search: 'google backend' } })
+```
+It finds documents where `companyName` OR `roleTitle` contains "google" or "backend" (case-insensitive, partial word matching).
+
+### Important Limitation
+You can only have **ONE text index per collection**. That's a MongoDB rule. So we combine `companyName` and `roleTitle` into a single text index rather than creating separate ones.
+
+---
+
+## Self-Assessment Checklist (Step 1.1 + Step 1.2)
+
+- [x] I understand what a Mongoose schema is and why it matters.
+- [x] I can explain why `enum` is used for the `status` field instead of free-text.
+- [x] I understand how ObjectId references link collections (like SQL foreign keys).
+- [x] I can explain the left-prefix rule for compound indexes.
+- [x] I know why `userId` must be the first key in every compound index.
+- [x] I understand the difference between a virtual field and a persisted computed field.
+- [x] I can explain why we persist `isStale` instead of computing it on-the-fly.
+- [x] I understand the soft delete pattern and why hard deletes corrupt analytics.
+- [x] I know why empty string `''` is preferred over `null` for optional enum fields.
+- [x] I understand what a text index does and the one-per-collection limitation.
+- [x] I can explain `select: false` on `passwordHash` and why it matters for security.
+- [x] I understand multi-layer validation: client → express-validator → Mongoose → MongoDB.
+
+---
+
+## Official Resources & References
+- [Mongoose Schema Documentation](https://mongoosejs.com/docs/guide.html)
+- [Mongoose SchemaTypes](https://mongoosejs.com/docs/schematypes.html)
+- [Mongoose Validation](https://mongoosejs.com/docs/validation.html)
+- [MongoDB Indexes](https://www.mongodb.com/docs/manual/indexes/)
+- [MongoDB Compound Indexes](https://www.mongodb.com/docs/manual/core/index-compound/)
+- [MongoDB Text Indexes](https://www.mongodb.com/docs/manual/core/index-text/)
