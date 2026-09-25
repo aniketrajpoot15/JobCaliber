@@ -77,6 +77,8 @@ MongoDB is **schema-less** by design — it accepts any document in any shape. T
 | `docs/Architecture/DATABASE_SCHEMA.md` §2.5 | Blueprint code for `User` schema |
 | `docs/Architecture/DATABASE_SCHEMA.md` §3.5 | Blueprint code for `Application` schema |
 | `docs/Architecture/DATABASE_SCHEMA.md` §4.5 | Blueprint code for `InterviewRound` schema |
+| `docs/Architecture/DATABASE_SCHEMA.md` §5.5 | Blueprint code for `InterviewQuestion` schema |
+| `docs/Architecture/DATABASE_SCHEMA.md` §6.5 | Blueprint code for `ProblemLog` schema |
 
 ### Future (Phase 2+ — Implementation):
 | File/Folder | What It Will Do |
@@ -366,6 +368,46 @@ When designing Mongoose schemas, a student's most common dilemma is: **Should I 
 | **Child Relationships**| Child has no children of its own | Child has its own related entities (e.g. `InterviewRound` has `InterviewQuestion` and `ProblemLog`) |
 
 **JobCaliber Application:** We chose **referencing** for `InterviewRound` because the Action Center needs to query pending debriefs across *all* applications directly, and each round has its own children (`questions` and `problem logs`).
+
+### Concept 13: Compound Unique Indexes for Deduplication
+
+In many applications, a field is not globally unique by itself, but is unique **in combination with another field**.
+
+**Example in JobCaliber:**
+In `ProblemLog`, a topic name like `"Dynamic Programming"` can appear many times in the database (across different rounds and different users). But inside a **single debrief round**, a candidate should not tag `"Dynamic Programming"` twice:
+
+```javascript
+// Compound unique index on roundId + topicName
+problemLogSchema.index({ roundId: 1, topicName: 1 }, { unique: true });
+```
+
+**How it works:**
+- Round 1 + "Dynamic Programming" → ✅ Saved
+- Round 1 + "Graphs" → ✅ Saved
+- Round 2 + "Dynamic Programming" → ✅ Saved (different round)
+- Round 1 + "Dynamic Programming" → ❌ Rejected with E11000 duplicate key error!
+
+This guarantees data integrity directly at the database storage layer without requiring manual checking in Javascript.
+
+### Concept 14: Denormalization for Aggregation Performance
+
+In relational databases (SQL), you normalize everything to 3rd normal form (no duplicate columns). In MongoDB, deliberate **denormalization** is a standard architectural pattern for performance.
+
+**Why `ProblemLog` has `userId` directly:**
+The Weakness Heatmap needs to count how many times a user stumbled on each topic:
+```javascript
+ProblemLog.aggregate([
+  { $match: { userId: req.user._id } },
+  { $group: { _id: '$topicName', count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+]);
+```
+If `ProblemLog` only had `roundId`:
+1. MongoDB would have to `$lookup` `interviewrounds` for every single log.
+2. Filter those rounds by user.
+3. Group the results.
+
+By placing `userId` directly on `ProblemLog`, MongoDB filters with `{ userId: 1, topicName: 1 }` in an instantaneous index scan with zero joins.
 
 ---
 

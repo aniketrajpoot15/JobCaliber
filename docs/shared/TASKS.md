@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (3/15 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (4/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -180,7 +180,7 @@
 - **Expected Result:** Both schemas defined with correct references (roundId, userId).
 - **Verification:** ProblemLog includes userId for direct aggregation queries (weakness heatmap).
 - **Learn/Review:** Why ProblemLog has userId directly (denormalization for aggregation performance).
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.5 — Define database relationships and index strategy
 - **Objective:** Document the entity relationships and explain why each index exists.
