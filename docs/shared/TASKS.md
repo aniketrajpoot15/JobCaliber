@@ -6,7 +6,7 @@
 > **Last Updated:** 2026-09-26  
 > **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (2/15 steps)  
 > **Total Steps:** 147  
-> **Reference:** `docs/phase-0/PRD.md` for requirements, `docs/phase-0/DECISIONS.md` for rationale  
+> **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
 
 ---
@@ -145,7 +145,7 @@
 ### Step 1.1 — Define User collection schema
 - **Objective:** Write the complete Mongoose schema definition for the `users` collection.
 - **Why:** The User model is the foundation — auth, tenant isolation, and settings all depend on it.
-- **Files:** `docs/phase-1/DATABASE_SCHEMA.md` (created — User section)
+- **Files:** `docs/Architecture/DATABASE_SCHEMA.md` (created — User section)
 - **Prerequisites:** Phase 0 complete
 - **Expected Result:** Field-by-field schema definition: field name, type, required, default, validation, index.
 - **Verification:** Schema covers all FR-01 requirements (fullName, email, passwordHash, staleThresholdDays).
@@ -155,7 +155,7 @@
 ### Step 1.2 — Define Application collection schema
 - **Objective:** Write the complete Mongoose schema definition for the `applications` collection.
 - **Why:** The most complex collection — 15+ fields, enum validation, computed virtuals, multiple indexes.
-- **Files:** `docs/phase-1/DATABASE_SCHEMA.md` (updated — Application section)
+- **Files:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — Application section)
 - **Prerequisites:** Step 1.1
 - **Expected Result:** Full schema with status enum, optional fields, timestamps, indexes for search/filter.
 - **Verification:** Schema covers FR-02 through FR-06 requirements. All 7 statuses present in enum.
@@ -165,7 +165,7 @@
 ### Step 1.3 — Define InterviewRound collection schema
 - **Objective:** Write the Mongoose schema for `interviewrounds` collection.
 - **Why:** Links applications to their interview rounds. Tracks debrief completion status.
-- **Files:** `docs/phase-1/DATABASE_SCHEMA.md` (updated — InterviewRound section)
+- **Files:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — InterviewRound section)
 - **Prerequisites:** Step 1.2
 - **Expected Result:** Schema with roundType enum, scheduledDate, selfRating, debriefCompleted flag.
 - **Verification:** Schema covers FR-07 and FR-08 requirements. roundType enum has all 5 types.
@@ -175,7 +175,7 @@
 ### Step 1.4 — Define InterviewQuestion and ProblemLog schemas
 - **Objective:** Write Mongoose schemas for `interviewquestions` and `problemlogs` collections.
 - **Why:** These store the debrief output — questions asked and topics struggled with.
-- **Files:** `docs/phase-1/DATABASE_SCHEMA.md` (updated — InterviewQuestion + ProblemLog sections)
+- **Files:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — InterviewQuestion + ProblemLog sections)
 - **Prerequisites:** Step 1.3
 - **Expected Result:** Both schemas defined with correct references (roundId, userId).
 - **Verification:** ProblemLog includes userId for direct aggregation queries (weakness heatmap).
@@ -185,7 +185,7 @@
 ### Step 1.5 — Define database relationships and index strategy
 - **Objective:** Document the entity relationships and explain why each index exists.
 - **Why:** Indexes determine query performance. Wrong indexes = slow analytics.
-- **Files:** `docs/phase-1/DATABASE_SCHEMA.md` (updated — Relationships + Indexes section)
+- **Files:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — Relationships + Indexes section)
 - **Prerequisites:** Steps 1.1–1.4
 - **Expected Result:** ER diagram (text-based), compound index list with query justification.
 - **Verification:** Every index maps to a specific query pattern (search, filter, aggregation).
@@ -195,7 +195,7 @@
 ### Step 1.6 — Define Auth API endpoints
 - **Objective:** Specify the exact request/response contract for `/api/auth/*` endpoints.
 - **Why:** API contracts prevent ambiguity during implementation — both sides agree on shapes.
-- **Files:** `docs/phase-1/API_SPEC.md` (created — Auth section)
+- **Files:** `docs/Architecture/API_SPEC.md` (created — Auth section)
 - **Prerequisites:** Step 1.1
 - **Expected Result:** 4 endpoints fully specified: register, login, logout, me. Each with method, path, request body, response shape, error responses.
 - **Verification:** Covers FR-01.1 through FR-01.7. Rate limit rules documented.
@@ -205,7 +205,7 @@
 ### Step 1.7 — Define Application CRUD API endpoints
 - **Objective:** Specify the request/response contract for `/api/applications/*` endpoints.
 - **Why:** The most complex API surface — create, list (with filters), get, update, status change, archive.
-- **Files:** `docs/phase-1/API_SPEC.md` (updated — Applications section)
+- **Files:** `docs/Architecture/API_SPEC.md` (updated — Applications section)
 - **Prerequisites:** Steps 1.2, 1.6
 - **Expected Result:** 6+ endpoints specified with query param filters, pagination, and duplicate detection.
 - **Verification:** Covers FR-02, FR-03, FR-04, FR-05. Tenant isolation documented on every endpoint.
@@ -215,7 +215,7 @@
 ### Step 1.8 — Define Interview & Debrief API endpoints
 - **Objective:** Specify the request/response contract for `/api/interviews/*` endpoints.
 - **Why:** The debrief endpoint is the most complex single request — saves rating, questions, and problem logs in one call.
-- **Files:** `docs/phase-1/API_SPEC.md` (updated — Interviews section)
+- **Files:** `docs/Architecture/API_SPEC.md` (updated — Interviews section)
 - **Prerequisites:** Steps 1.3, 1.4
 - **Expected Result:** 5+ endpoints: create round, get rounds, submit debrief, update debrief, upcoming.
 - **Verification:** Debrief endpoint specifies the nested request body structure clearly.
@@ -225,7 +225,7 @@
 ### Step 1.9 — Define Analytics API endpoints
 - **Objective:** Specify the request/response contract for `/api/analytics/*` endpoints.
 - **Why:** Analytics endpoints return aggregated data — their response shapes must be clearly defined for the frontend.
-- **Files:** `docs/phase-1/API_SPEC.md` (updated — Analytics section)
+- **Files:** `docs/Architecture/API_SPEC.md` (updated — Analytics section)
 - **Prerequisites:** Steps 1.2, 1.4
 - **Expected Result:** 4 endpoints: funnel, weaknesses, resume-cohorts, triage. Response shapes include guardrail metadata.
 - **Verification:** Triage endpoint priority rules documented. Guardrail thresholds included in response.
@@ -235,7 +235,7 @@
 ### Step 1.10 — Define page inventory and routing structure
 - **Objective:** List every page in the app, its URL route, and whether it requires authentication.
 - **Why:** Before building UI, we need to know how many pages exist and how they connect.
-- **Files:** `docs/phase-1/UI_SPEC.md` (created — Pages section)
+- **Files:** `docs/Architecture/UI_SPEC.md` (created — Pages section)
 - **Prerequisites:** Steps 1.6–1.9
 - **Expected Result:** Page list: Login, Register, Dashboard, Pipeline, Application Detail, Analytics, Settings.
 - **Verification:** Every page maps to at least one feature from the PRD.
@@ -245,7 +245,7 @@
 ### Step 1.11 — Define component hierarchy and layout structure
 - **Objective:** Define the shared layout (Navbar, Sidebar, Content area) and reusable component tree.
 - **Why:** Component planning prevents ad-hoc duplication and ensures consistency.
-- **Files:** `docs/phase-1/UI_SPEC.md` (updated — Components section)
+- **Files:** `docs/Architecture/UI_SPEC.md` (updated — Components section)
 - **Prerequisites:** Step 1.10
 - **Expected Result:** Component tree: Layout → {Navbar, Sidebar, Content}. Reusable: Button, Modal, Card, Badge, etc.
 - **Verification:** Quick-Add Modal, Debrief Modal, and Action Center widget identified as key components.
@@ -255,7 +255,7 @@
 ### Step 1.12 — Define MongoDB aggregation pipelines for analytics
 - **Objective:** Write the exact aggregation pipeline stages for funnel, weakness heatmap, and resume cohort.
 - **Why:** Aggregation pipelines are the most complex backend logic — defining them upfront prevents guesswork.
-- **Files:** `docs/phase-1/ANALYTICS_SPEC.md` (created)
+- **Files:** `docs/Architecture/ANALYTICS_SPEC.md` (created)
 - **Prerequisites:** Steps 1.2, 1.4, 1.5
 - **Expected Result:** 3 pipeline definitions with $match, $group, $sort stages. Guardrail logic documented.
 - **Verification:** Funnel counts match the 4 progression stages. Weakness pipeline groups by topicName.
@@ -265,7 +265,7 @@
 ### Step 1.13 — Define Action Center triage logic
 - **Objective:** Document the exact algorithm for computing the top 3 action items.
 - **Why:** The Action Center has 4 trigger types with priority ordering — the logic must be unambiguous.
-- **Files:** `docs/phase-1/ANALYTICS_SPEC.md` (updated — Triage section)
+- **Files:** `docs/Architecture/ANALYTICS_SPEC.md` (updated — Triage section)
 - **Prerequisites:** Steps 1.2, 1.3
 - **Expected Result:** Priority algorithm: interview in 48h > pending debrief > stale app > recurring topic.
 - **Verification:** Max 3 items. Dismiss/snooze behavior documented. Edge cases covered.
@@ -275,7 +275,7 @@
 ### Step 1.14 — Define security architecture
 - **Objective:** Document the middleware chain, validation rules, and rate limit configuration.
 - **Why:** Security is non-negotiable. Every middleware, its order, and its purpose must be documented.
-- **Files:** `docs/phase-1/SECURITY.md` (created)
+- **Files:** `docs/Architecture/SECURITY.md` (created)
 - **Prerequisites:** Steps 1.6–1.9
 - **Expected Result:** Middleware chain order, rate limit config, NoSQL sanitization config, tenant isolation pattern.
 - **Verification:** Every API endpoint has documented auth requirement and validation rules.
@@ -285,7 +285,7 @@
 ### Step 1.15 — Architecture review & approval
 - **Objective:** Developer reviews all 5 architecture documents before implementation begins.
 - **Why:** Architecture errors found during implementation are 10x more expensive to fix.
-- **Files:** Review: `docs/phase-1/DATABASE_SCHEMA.md`, `docs/phase-1/API_SPEC.md`, `docs/phase-1/UI_SPEC.md`, `docs/phase-1/ANALYTICS_SPEC.md`, `docs/phase-1/SECURITY.md`
+- **Files:** Review: `docs/Architecture/DATABASE_SCHEMA.md`, `docs/Architecture/API_SPEC.md`, `docs/Architecture/UI_SPEC.md`, `docs/Architecture/ANALYTICS_SPEC.md`, `docs/Architecture/SECURITY.md`
 - **Prerequisites:** Steps 1.1–1.14
 - **Expected Result:** Developer approves all architecture documents.
 - **Verification:** Explicit "approved" from developer for each document.

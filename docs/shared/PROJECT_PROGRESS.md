@@ -4,7 +4,7 @@
 
 > **Last Updated:** 2026-09-26  
 > **Reference:** `docs/shared/TASKS.md` for full step details  
-> **Tech Learning Guide:** `TECH_LEARNING.md` for technology notes and internals
+> **Tech Learning Hub:** `tech-learning/README.md` for technology notes and internals
 
 ---
 
@@ -52,7 +52,7 @@ Progress: [#########······························
 | **Phase** | Phase 1: Architecture |
 | **Objective** | Write the Mongoose schema for `interviewrounds` collection. |
 | **Why** | Links applications to their interview rounds. Tracks debrief completion status. |
-| **Files involved** | `docs/phase-1/DATABASE_SCHEMA.md` (to be updated) |
+| **Files involved** | `docs/Architecture/DATABASE_SCHEMA.md` (to be updated) |
 | **Expected result** | Schema with roundType enum, scheduledDate, selfRating, debriefCompleted flag. |
 | **Verification** | Schema covers FR-07 and FR-08 requirements. roundType enum has all 5 types. |
 
@@ -62,7 +62,7 @@ Progress: [#########······························
 
 ### Step 1.2 — Define Application collection schema
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/phase-1/DATABASE_SCHEMA.md` (updated — Section 3), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `TECH_LEARNING.md`
+- **Files Created/Modified:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — Section 3), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/mongoose.md`
 - **Key Concepts Specified:**
   - **Enum Validation in Mongoose:** How `enum: { values: [...], message: '...' }` enforces a fixed set of allowed values at the database layer. The 7-stage pipeline status and `workMode`/`source` dropdowns all use enums to prevent invalid data from entering the system.
   - **Compound Indexes & Left-Prefix Rule:** How MongoDB compound indexes work left-to-right, why `userId` must be the first key in every compound index for tenant isolation, and how each index maps to a specific query pattern (pipeline view, duplicate detection, date filtering, archive filtering, text search).

@@ -70,14 +70,14 @@ JobCaliber/
 │   └── package.json
 │
 ├── docs/                      # Documentation
-│   ├── phase-0/               # Research & master specifications
+│   ├── Research_And_Documentation/ # Phase 0: Research & master specifications
 │   │   ├── RESEARCH.md
 │   │   ├── PROJECT_MASTER_SPEC.md
 │   │   ├── PRD.md
 │   │   ├── DECISIONS.md
 │   │   ├── PLAYBOOK.md
 │   │   └── PRODUCT_SPEC.md
-│   ├── phase-1/               # Architecture specifications
+│   ├── Architecture/          # Phase 1: Architecture specifications
 │   │   ├── DATABASE_SCHEMA.md
 │   │   └── ...                # (API_SPEC.md, UI_SPEC.md, etc.)
 │   └── shared/                # Execution & progress tracking
@@ -86,7 +86,12 @@ JobCaliber/
 │
 ├── AGENTS.md                  # AI agent development directives
 ├── README.md                  # This file
-└── TECH_LEARNING.md           # Living technology learning guide
+├── TECH_LEARNING.md           # Redirect → tech-learning/ directory
+└── tech-learning/             # Technology learning hub (one file per technology)
+    ├── README.md              # Index, learning order, status matrix
+    ├── git.md                 # Git version control
+    ├── mongodb.md             # MongoDB database
+    └── mongoose.md            # Mongoose ODM
 ```
 
 ---
@@ -202,14 +207,14 @@ USER ──► APPLICATION ──► INTERVIEW_ROUND ──► INTERVIEW_QUESTIO
 
 | Document | Purpose |
 |---|---|
-| [PROJECT_MASTER_SPEC.md](docs/phase-0/PROJECT_MASTER_SPEC.md) | Complete product knowledge base (65 sections) |
-| [PRD.md](docs/phase-0/PRD.md) | Requirements, user stories, acceptance criteria |
-| [DECISIONS.md](docs/phase-0/DECISIONS.md) | Architecture decision records (14 ADRs) |
+| [PROJECT_MASTER_SPEC.md](docs/Research_And_Documentation/PROJECT_MASTER_SPEC.md) | Complete product knowledge base (65 sections) |
+| [PRD.md](docs/Research_And_Documentation/PRD.md) | Requirements, user stories, acceptance criteria |
+| [DECISIONS.md](docs/Research_And_Documentation/DECISIONS.md) | Architecture decision records (14 ADRs) |
 | [TASKS.md](docs/shared/TASKS.md) | Implementation roadmap (147 granular steps, 8 phases) |
 | [PROJECT_PROGRESS.md](docs/shared/PROJECT_PROGRESS.md) | Central progress tracking dashboard |
-| [TECH_LEARNING.md](TECH_LEARNING.md) | Living technology study & engineering reference guide |
+| [tech-learning/](tech-learning/README.md) | Technology learning hub — one file per technology |
 | [AGENTS.md](AGENTS.md) | AI agent development rules |
-| [RESEARCH.md](docs/phase-0/RESEARCH.md) | Research evidence & competitor analysis |
+| [RESEARCH.md](docs/Research_And_Documentation/RESEARCH.md) | Research evidence & competitor analysis |
 
 ---
 
