@@ -7,9 +7,9 @@
 > **Last Updated:** 2026-09-26  
 > **Target Database:** MongoDB 6.0+ via Mongoose ODM (v8+)  
 > **Reference Documents:**  
-> - `docs/PRD.md` (FR-01 through FR-15)  
-> - `docs/DECISIONS.md` (ADR-002, ADR-003, ADR-004, ADR-007, ADR-008, ADR-012, ADR-013)  
-> - `docs/PROJECT_MASTER_SPEC.md` (Section 43: Data Model Overview)  
+> - `docs/phase-0/PRD.md` (FR-01 through FR-15)  
+> - `docs/phase-0/DECISIONS.md` (ADR-002, ADR-003, ADR-004, ADR-007, ADR-008, ADR-012, ADR-013)  
+> - `docs/phase-0/PROJECT_MASTER_SPEC.md` (Section 43: Data Model Overview)  
 > - `AGENTS.md` (Section 6: Data Model, Section 9: Security Rules)
 
 ---

@@ -17,7 +17,7 @@ Job seekers submit 100-300+ applications using brute-force volume. They fail bec
 1. **Tracker Abandonment:** Existing tools require 10-25 fields per entry. Users stop tracking within 2-3 weeks.
 2. **No Diagnostic Feedback:** Candidates never discover WHERE in the pipeline they fail (resume vs. interview) or WHICH topics keep tripping them up.
 
-**Evidence:** ~75% of applications get no response. ~53% of seekers are ghosted. Trackers "die after a week" due to entry fatigue. See `docs/RESEARCH.md` for full evidence.
+**Evidence:** ~75% of applications get no response. ~53% of seekers are ghosted. Trackers "die after a week" due to entry fatigue. See `docs/phase-0/RESEARCH.md` for full evidence.
 
 ---
 

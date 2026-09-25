@@ -3,7 +3,7 @@
 # JobCaliber — Project Progress
 
 > **Last Updated:** 2026-09-26  
-> **Reference:** `docs/TASKS.md` for full step details  
+> **Reference:** `docs/shared/TASKS.md` for full step details  
 > **Tech Learning Guide:** `TECH_LEARNING.md` for technology notes and internals
 
 ---
@@ -52,7 +52,7 @@ Progress: [########······························�
 | **Phase** | Phase 1: Architecture |
 | **Objective** | Write the complete Mongoose schema definition for the `applications` collection. |
 | **Why** | The most complex collection — 15+ fields, enum validation, computed virtuals, multiple indexes. |
-| **Files involved** | `docs/DATABASE_SCHEMA.md` (to be updated) |
+| **Files involved** | `docs/phase-1/DATABASE_SCHEMA.md` (to be updated) |
 | **Expected result** | Full schema with status enum, optional fields, timestamps, indexes for search/filter. |
 | **Verification** | Schema covers FR-02 through FR-06 requirements. All 7 statuses present in enum. |
 
@@ -62,7 +62,7 @@ Progress: [########······························�
 
 ### Step 1.1 — Define User collection schema
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/DATABASE_SCHEMA.md` (created), `docs/TASKS.md`, `docs/PROJECT_PROGRESS.md`
+- **Files Created/Modified:** `docs/phase-1/DATABASE_SCHEMA.md` (created), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`
 - **Key Concepts Specified:**
   - Multi-tier defense strategy: Client-side validation → express-validator payload sanitization → Mongoose schema constraints → MongoDB unique index.
   - User model structure: `fullName`, sanitized `email`, `passwordHash` (`select: false`), optional `targetRole`, and configurable `staleThresholdDays` (default 14, range 7-45).

@@ -31,10 +31,10 @@ CAPTURE (< 15s) → TRACK (pipeline) → DEBRIEF (90s) → LEARN (patterns) → 
 **Every feature exists to serve one of these 5 loop stages.** If a proposed change does not serve the loop, it does not belong in the product.
 
 **Key references (all in `docs/` folder):**
-- `docs/PROJECT_MASTER_SPEC.md` — Complete product knowledge base
-- `docs/PRD.md` — Requirements and user stories
-- `docs/DECISIONS.md` — All architecture decisions with rationale
-- `docs/RESEARCH.md` — Evidence and competitor analysis
+- `docs/phase-0/PROJECT_MASTER_SPEC.md` — Complete product knowledge base
+- `docs/phase-0/PRD.md` — Requirements and user stories
+- `docs/phase-0/DECISIONS.md` — All architecture decisions with rationale
+- `docs/phase-0/RESEARCH.md` — Evidence and competitor analysis
 
 ---
 
@@ -121,7 +121,7 @@ USER (1) ── aggregates ──► (N) PROBLEM_LOG
 | `interviewquestions` | roundId, questionText | { roundId } |
 | `problemlogs` | roundId, userId, topicName, category | { userId, topicName } |
 
-**Full schema definitions:** See `docs/DATABASE_SCHEMA.md` (to be created in Architecture phase)
+**Full schema definitions:** See `docs/phase-1/DATABASE_SCHEMA.md` (created in Step 1.1)
 
 ---
 
@@ -134,7 +134,7 @@ USER (1) ── aggregates ──► (N) PROBLEM_LOG
 | `/api/interviews` | Rounds + debriefs | create round, submit debrief, get upcoming |
 | `/api/analytics` | Aggregations | funnel, weaknesses, resume-cohorts, triage |
 
-**Full API specification:** See `docs/API_SPEC.md` (to be created in Architecture phase)
+**Full API specification:** See `docs/phase-1/API_SPEC.md` (to be created in Architecture phase)
 
 ---
 
@@ -193,20 +193,25 @@ JobCaliber/
 │   └── package.json
 │
 ├── docs/                     # Project documentation
-│   ├── RESEARCH.md
-│   ├── PROJECT_MASTER_SPEC.md
-│   ├── PRD.md
-│   ├── DECISIONS.md
-│   ├── TASKS.md
-│   ├── PROJECT_PROGRESS.md
-│   ├── ARCHITECTURE.md       # (to be created)
-│   ├── DATABASE_SCHEMA.md    # (to be created)
-│   ├── API_SPEC.md           # (to be created)
-│   ├── UI_SPEC.md            # (to be created)
-│   ├── ANALYTICS_SPEC.md     # (to be created)
-│   ├── SECURITY.md           # (to be created)
-│   ├── TESTING_STRATEGY.md   # (to be created)
-│   └── USER_FLOWS.md         # (to be created)
+│   ├── phase-0/              # Research & master specifications
+│   │   ├── RESEARCH.md
+│   │   ├── PROJECT_MASTER_SPEC.md
+│   │   ├── PRD.md
+│   │   ├── DECISIONS.md
+│   │   ├── PLAYBOOK.md
+│   │   └── PRODUCT_SPEC.md
+│   ├── phase-1/              # Architecture specifications
+│   │   ├── DATABASE_SCHEMA.md
+│   │   ├── ARCHITECTURE.md   # (to be created)
+│   │   ├── API_SPEC.md       # (to be created)
+│   │   ├── UI_SPEC.md        # (to be created)
+│   │   ├── ANALYTICS_SPEC.md # (to be created)
+│   │   ├── SECURITY.md       # (to be created)
+│   │   ├── TESTING_STRATEGY.md # (to be created)
+│   │   └── USER_FLOWS.md     # (to be created)
+│   └── shared/               # Implementation tracking
+│       ├── TASKS.md
+│       └── PROJECT_PROGRESS.md
 │
 ├── AGENTS.md                 # This file (must stay at root)
 ├── TECH_LEARNING.md          # Technology learning guide (continuously updated)
@@ -343,7 +348,7 @@ STATUS: WAITING FOR EXPLICIT APPROVAL.
 - **Never auto-continue.** Never assume approval.
 - **Never build future features.** Only what was explicitly requested.
 - **Break large tasks down.** If a task modifies many areas or introduces multiple concepts, split it.
-- **Update tracking & learning files after EVERY step:** Update `TASKS.md`, `PROJECT_PROGRESS.md`, and `TECH_LEARNING.md` (only for technologies actually used in completed steps).
+- **Update tracking & learning files after EVERY step:** Update `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, and `TECH_LEARNING.md` (only for technologies actually used in completed steps).
 
 ---
 

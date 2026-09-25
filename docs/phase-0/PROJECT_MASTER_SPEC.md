@@ -97,7 +97,7 @@ JobCaliber was conceived and designed through a rigorous research-first process:
 4. Statistical guardrail design to prevent misleading analytics
 5. User persona development grounded in documented pain points
 
-Full research documentation: See `docs/RESEARCH.md`
+Full research documentation: See `docs/phase-0/RESEARCH.md`
 
 ---
 
@@ -165,7 +165,7 @@ Traditional job trackers suffer from two fatal failures:
 
 **Verdict:** The problem is real, well-documented, and currently underserved.
 
-Full research: `docs/RESEARCH.md` → Section 2
+Full research: `docs/phase-0/RESEARCH.md` → Section 2
 
 ---
 
@@ -261,7 +261,7 @@ The cost is measurable: wasted time, repeated mistakes, extended unemployment, a
 - Recruiter CRM
 - Skill extraction from JDs
 
-Full details: `docs/RESEARCH.md` → Section 3
+Full details: `docs/phase-0/RESEARCH.md` → Section 3
 
 ---
 
@@ -324,7 +324,7 @@ The 2024-2026 market has shifted from simple trackers to AI-driven "career copil
 | **Notion** | General-purpose workspace | Free | Maintenance debt; no built-in analytics |
 | **GitHub clones** | Basic CRUD trackers | Free | Flat data model; zero differentiation |
 
-Full competitor analysis: `docs/RESEARCH.md` → Section 4
+Full competitor analysis: `docs/phase-0/RESEARCH.md` → Section 4
 
 ---
 
@@ -915,7 +915,7 @@ USER (1) ── aggregates ──► (N) PROBLEM_LOG
 | `interviewquestions` | Questions asked | roundId, questionText, category |
 | `problemlogs` | Stumbled topics | roundId, userId, topicName, category |
 
-> **Note:** Detailed schema definitions (fields, types, validation, indexes) will be specified in `docs/DATABASE_SCHEMA.md` during the Architecture phase.
+> **Note:** Detailed schema definitions (fields, types, validation, indexes) will be specified in `docs/phase-1/DATABASE_SCHEMA.md` during the Architecture phase.
 
 ---
 
@@ -933,7 +933,7 @@ JobCaliber/
 └── shared/          # Shared constants (if needed)
 ```
 
-> **Note:** Detailed architecture decisions will be specified in `docs/ARCHITECTURE.md` during the Architecture phase.
+> **Note:** Detailed architecture decisions will be specified in `docs/phase-1/ARCHITECTURE.md` during the Architecture phase.
 
 ---
 
@@ -948,7 +948,7 @@ JobCaliber/
 | **Charts** | Recharts | Native React SVG, responsive containers |
 | **Drag-and-Drop** | @hello-pangea/dnd | Maintained, accessible fork of react-beautiful-dnd |
 
-> **Note:** Component hierarchy and page architecture will be specified in `docs/UI_SPEC.md` during the Architecture phase.
+> **Note:** Component hierarchy and page architecture will be specified in `docs/phase-1/UI_SPEC.md` during the Architecture phase.
 
 ---
 
@@ -962,7 +962,7 @@ JobCaliber/
 | **Security** | express-mongo-sanitize, express-rate-limit | NoSQL injection defense, brute-force prevention |
 | **Date Utils** | date-fns | Lightweight, modular, immutable date math |
 
-> **Note:** Route structure and middleware chain will be specified in `docs/ARCHITECTURE.md` and `docs/API_SPEC.md`.
+> **Note:** Route structure and middleware chain will be specified in `docs/phase-1/ARCHITECTURE.md` and `docs/phase-1/API_SPEC.md`.
 
 ---
 
@@ -982,7 +982,7 @@ JobCaliber/
 - `problemlogs: { userId: 1, topicName: 1 }` (weakness aggregation)
 - `interviewrounds: { applicationId: 1, scheduledDate: 1 }`
 
-> **Note:** Full schema definitions will be in `docs/DATABASE_SCHEMA.md`.
+> **Note:** Full schema definitions will be in `docs/phase-1/DATABASE_SCHEMA.md`.
 
 ---
 
@@ -997,7 +997,7 @@ JobCaliber/
 | `/api/interviews` | Round creation + debrief submission |
 | `/api/analytics` | Funnel, weakness, resume cohort, triage |
 
-> **Note:** Full endpoint specifications will be in `docs/API_SPEC.md`.
+> **Note:** Full endpoint specifications will be in `docs/phase-1/API_SPEC.md`.
 
 ---
 
@@ -1086,7 +1086,7 @@ JobCaliber is a personal tool, not a SaaS platform. Scalability beyond 100 concu
 
 ## 55. Testing
 
-> **Note:** Full testing strategy will be specified in `docs/TESTING_STRATEGY.md` during the Architecture phase.
+> **Note:** Full testing strategy will be specified in `docs/phase-1/TESTING_STRATEGY.md` during the Architecture phase.
 
 ### Planned Testing Approach
 
@@ -1193,7 +1193,7 @@ These are V3+ explorations. NOT in scope for MVP or V2.
 
 ## 62. Research Evidence
 
-All research evidence is documented with full classification and sourcing in `docs/RESEARCH.md`.
+All research evidence is documented with full classification and sourcing in `docs/phase-0/RESEARCH.md`.
 
 Key evidence types used:
 - `[FACT]` — Objectively verifiable
@@ -1248,6 +1248,6 @@ All decisions documented above were made through a structured process:
 2. **Step 0.2:** Product Direction & Positioning — Q&A session to lock 8 key decisions
 3. **Step 0.3:** Feature Specification & User Stories — 35 user stories with acceptance criteria
 
-Each decision is traceable to specific evidence in `docs/RESEARCH.md`.
+Each decision is traceable to specific evidence in `docs/phase-0/RESEARCH.md`.
 
 Future decisions will be documented in `DECISIONS.md` (to be created in a subsequent step).

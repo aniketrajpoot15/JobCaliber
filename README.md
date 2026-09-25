@@ -70,17 +70,23 @@ JobCaliber/
 │   └── package.json
 │
 ├── docs/                      # Documentation
-│   ├── RESEARCH.md            # Evidence & competitor analysis
-│   ├── ARCHITECTURE.md        # System architecture (planned)
-│   ├── DATABASE_SCHEMA.md     # Schema definitions (planned)
-│   ├── API_SPEC.md            # Endpoint specifications (planned)
-│   └── ...
+│   ├── phase-0/               # Research & master specifications
+│   │   ├── RESEARCH.md
+│   │   ├── PROJECT_MASTER_SPEC.md
+│   │   ├── PRD.md
+│   │   ├── DECISIONS.md
+│   │   ├── PLAYBOOK.md
+│   │   └── PRODUCT_SPEC.md
+│   ├── phase-1/               # Architecture specifications
+│   │   ├── DATABASE_SCHEMA.md
+│   │   └── ...                # (API_SPEC.md, UI_SPEC.md, etc.)
+│   └── shared/                # Execution & progress tracking
+│       ├── TASKS.md
+│       └── PROJECT_PROGRESS.md
 │
-├── PROJECT_MASTER_SPEC.md     # Complete product knowledge base
-├── PRD.md                     # Product requirements & user stories
 ├── AGENTS.md                  # AI agent development directives
-├── DECISIONS.md               # Architecture decision records
-└── README.md                  # This file
+├── README.md                  # This file
+└── TECH_LEARNING.md           # Living technology learning guide
 ```
 
 ---
@@ -196,14 +202,14 @@ USER ──► APPLICATION ──► INTERVIEW_ROUND ──► INTERVIEW_QUESTIO
 
 | Document | Purpose |
 |---|---|
-| [PROJECT_MASTER_SPEC.md](docs/PROJECT_MASTER_SPEC.md) | Complete product knowledge base (65 sections) |
-| [PRD.md](docs/PRD.md) | Requirements, user stories, acceptance criteria |
-| [DECISIONS.md](docs/DECISIONS.md) | Architecture decision records (14 ADRs) |
-| [TASKS.md](docs/TASKS.md) | Implementation roadmap (147 granular steps, 8 phases) |
-| [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) | Central progress tracking dashboard |
+| [PROJECT_MASTER_SPEC.md](docs/phase-0/PROJECT_MASTER_SPEC.md) | Complete product knowledge base (65 sections) |
+| [PRD.md](docs/phase-0/PRD.md) | Requirements, user stories, acceptance criteria |
+| [DECISIONS.md](docs/phase-0/DECISIONS.md) | Architecture decision records (14 ADRs) |
+| [TASKS.md](docs/shared/TASKS.md) | Implementation roadmap (147 granular steps, 8 phases) |
+| [PROJECT_PROGRESS.md](docs/shared/PROJECT_PROGRESS.md) | Central progress tracking dashboard |
 | [TECH_LEARNING.md](TECH_LEARNING.md) | Living technology study & engineering reference guide |
 | [AGENTS.md](AGENTS.md) | AI agent development rules |
-| [docs/RESEARCH.md](docs/RESEARCH.md) | Research evidence & competitor analysis |
+| [RESEARCH.md](docs/phase-0/RESEARCH.md) | Research evidence & competitor analysis |
 
 ---
 
