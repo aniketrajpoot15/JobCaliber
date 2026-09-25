@@ -3,8 +3,8 @@
 # JOBCALIBER — IMPLEMENTATION TASKS
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
-> **Last Updated:** 2026-09-24  
-> **Status:** Phase 0 Complete (11/11 steps) → Phase 1 Next  
+> **Last Updated:** 2026-09-26  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (1/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `PRD.md` for requirements, `DECISIONS.md` for rationale  
 > **Progress Tracker:** `PROJECT_PROGRESS.md`
@@ -150,7 +150,7 @@
 - **Expected Result:** Field-by-field schema definition: field name, type, required, default, validation, index.
 - **Verification:** Schema covers all FR-01 requirements (fullName, email, passwordHash, staleThresholdDays).
 - **Learn/Review:** Mongoose schema design, field types, validation rules, indexing basics.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.2 — Define Application collection schema
 - **Objective:** Write the complete Mongoose schema definition for the `applications` collection.

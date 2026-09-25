@@ -2,7 +2,7 @@
 
 # JobCaliber — Project Progress
 
-> **Last Updated:** 2026-09-25  
+> **Last Updated:** 2026-09-26  
 > **Reference:** `docs/TASKS.md` for full step details  
 > **Tech Learning Guide:** `TECH_LEARNING.md` for technology notes and internals
 
@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 11 |
-| **Remaining Steps** | 136 |
-| **Overall Progress** | **7%** |
-| **Current Phase** | Phase 1 — Architecture (Next) |
-| **Current Step** | Step 1.1 — Define User collection schema |
-| **Current Status** | `READY` (Awaiting approval to begin Phase 1) |
+| **Completed Steps** | 12 |
+| **Remaining Steps** | 135 |
+| **Overall Progress** | **8%** |
+| **Current Phase** | Phase 1 — Architecture (In Progress) |
+| **Current Step** | Step 1.2 — Define Application collection schema |
+| **Current Status** | `READY` (Step 1.1 Complete; Awaiting approval for Step 1.2) |
 
 ```
-Progress: [#######·········································] 7%
-           11 / 147 steps
+Progress: [########········································] 8%
+           12 / 147 steps
 ```
 
 ---
@@ -32,7 +32,7 @@ Progress: [#######·······························
 | Phase | Total Steps | Completed | Remaining | Progress | Status |
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
-| Phase 1: Architecture | 15 | 0 | 15 | 0% | ⬜ Next |
+| Phase 1: Architecture | 15 | 1 | 14 | 7% | 🟡 In Progress |
 | Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
@@ -44,30 +44,30 @@ Progress: [#######·······························
 
 ## Next Step
 
-### Step 1.1 — Define User collection schema
+### Step 1.2 — Define Application collection schema
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 1: Architecture |
-| **Objective** | Write the complete Mongoose schema definition for the `users` collection. |
-| **Why** | The User model is the foundation — auth, tenant isolation, and settings all depend on it. |
-| **Files involved** | `docs/DATABASE_SCHEMA.md` (to be created) |
-| **Expected result** | Field-by-field schema definition: field name, type, required, default, validation, index. |
-| **Verification** | Schema covers all FR-01 requirements (fullName, email, passwordHash, staleThresholdDays). |
+| **Objective** | Write the complete Mongoose schema definition for the `applications` collection. |
+| **Why** | The most complex collection — 15+ fields, enum validation, computed virtuals, multiple indexes. |
+| **Files involved** | `docs/DATABASE_SCHEMA.md` (to be updated) |
+| **Expected result** | Full schema with status enum, optional fields, timestamps, indexes for search/filter. |
+| **Verification** | Schema covers FR-02 through FR-06 requirements. All 7 statuses present in enum. |
 
 ---
 
-## Latest Completed Step & Technology Learned
+## Latest Completed Step & Concepts Learned
 
-### Step 0.11 — Granular task decomposition & project setup files
-- **Date Completed:** 2026-09-24 / 2026-09-25
-- **Technologies Introduced:** Git (`.gitignore` & repository hygiene)
-- **Learning Guide Updated:** `TECH_LEARNING.md`
-- **Key Concepts Learned:**
-  - Content-addressable storage: Blobs, Trees, Commits, and SHA-1 hashing.
-  - Three Trees architecture: Working Directory, Index / Staging Area, and HEAD repository snapshots.
-  - `.gitignore` pattern matching, filesystem traversal pruning, and defense-in-depth against secret leakage.
+### Step 1.1 — Define User collection schema
+- **Date Completed:** 2026-09-26
+- **Files Created/Modified:** `docs/DATABASE_SCHEMA.md` (created), `docs/TASKS.md`, `docs/PROJECT_PROGRESS.md`
+- **Key Concepts Specified:**
+  - Multi-tier defense strategy: Client-side validation → express-validator payload sanitization → Mongoose schema constraints → MongoDB unique index.
+  - User model structure: `fullName`, sanitized `email`, `passwordHash` (`select: false`), optional `targetRole`, and configurable `staleThresholdDays` (default 14, range 7-45).
+  - Security boundaries: `select: false` on `passwordHash` with custom `toJSON` serialization transform to guarantee credentials never leak to API consumers.
+  - Tenant isolation anchoring: `User._id` serves as the tenant boundary for all downstream collections (`userId: req.user._id`).
 
 ---
 
@@ -75,6 +75,7 @@ Progress: [#######·······························
 
 | Step | Title | Date |
 |---|---|---|
+| 1.1 | Define User collection schema | 2026-09-26 |
 | 0.11 | Granular task decomposition & project setup files | 2026-09-24 |
 | 0.10 | Create TASKS.md | 2026-09-24 |
 | 0.9 | Rebuild README.md | 2026-09-24 |
@@ -99,9 +100,9 @@ None.
 
 | Step | Title | Phase |
 |---|---|---|
-| 1.1 | Define User collection schema | Phase 1: Architecture |
 | 1.2 | Define Application collection schema | Phase 1: Architecture |
 | 1.3 | Define InterviewRound collection schema | Phase 1: Architecture |
+| 1.4 | Define InterviewQuestion and ProblemLog schemas | Phase 1: Architecture |
 
 ---
 
@@ -110,7 +111,7 @@ None.
 | Milestone | Steps Complete | Target | Status |
 |---|---|---|---|
 | 📄 Documentation complete | 11/11 | Phase 0 | ✅ Complete |
-| 📐 Architecture complete | 0/15 | Phase 1 | ⬜ Next |
+| 📐 Architecture complete | 1/15 | Phase 1 | 🟡 In Progress |
 | 🔐 Auth working (end-to-end) | 0/36 | Phase 2 | ⬜ |
 | 📋 Pipeline working (Kanban + Table) | 0/31 | Phase 3 | ⬜ |
 | ⏰ Stale + Action Center working | 0/9 | Phase 4 | ⬜ |
