@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 13 |
-| **Remaining Steps** | 134 |
-| **Overall Progress** | **9%** |
+| **Completed Steps** | 14 |
+| **Remaining Steps** | 133 |
+| **Overall Progress** | **10%** |
 | **Current Phase** | Phase 1 — Architecture (In Progress) |
-| **Current Step** | Step 1.3 — Define InterviewRound collection schema |
-| **Current Status** | `READY` (Step 1.2 Complete; Awaiting approval for Step 1.3) |
+| **Current Step** | Step 1.4 — Define InterviewQuestion and ProblemLog schemas |
+| **Current Status** | `READY` (Step 1.3 Complete; Awaiting approval for Step 1.4) |
 
 ```
-Progress: [#########·······································] 9%
-           13 / 147 steps
+Progress: [##########······································] 10%
+           14 / 147 steps
 ```
 
 ---
@@ -32,7 +32,7 @@ Progress: [#########······························
 | Phase | Total Steps | Completed | Remaining | Progress | Status |
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
-| Phase 1: Architecture | 15 | 2 | 13 | 13% | 🟡 In Progress |
+| Phase 1: Architecture | 15 | 3 | 12 | 20% | 🟡 In Progress |
 | Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
@@ -44,31 +44,31 @@ Progress: [#########······························
 
 ## Next Step
 
-### Step 1.3 — Define InterviewRound collection schema
+### Step 1.4 — Define InterviewQuestion and ProblemLog schemas
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 1: Architecture |
-| **Objective** | Write the Mongoose schema for `interviewrounds` collection. |
-| **Why** | Links applications to their interview rounds. Tracks debrief completion status. |
+| **Objective** | Write Mongoose schemas for `interviewquestions` and `problemlogs` collections. |
+| **Why** | These store the debrief output — questions asked and topics struggled with. |
 | **Files involved** | `docs/Architecture/DATABASE_SCHEMA.md` (to be updated) |
-| **Expected result** | Schema with roundType enum, scheduledDate, selfRating, debriefCompleted flag. |
-| **Verification** | Schema covers FR-07 and FR-08 requirements. roundType enum has all 5 types. |
+| **Expected result** | Both schemas defined with correct references (roundId, userId). |
+| **Verification** | ProblemLog includes userId for direct aggregation queries (weakness heatmap). |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 1.2 — Define Application collection schema
+### Step 1.3 — Define InterviewRound collection schema
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — Section 3), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/mongoose.md`
+- **Files Created/Modified:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — Section 4), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/mongoose.md`
 - **Key Concepts Specified:**
-  - **Enum Validation in Mongoose:** How `enum: { values: [...], message: '...' }` enforces a fixed set of allowed values at the database layer. The 7-stage pipeline status and `workMode`/`source` dropdowns all use enums to prevent invalid data from entering the system.
-  - **Compound Indexes & Left-Prefix Rule:** How MongoDB compound indexes work left-to-right, why `userId` must be the first key in every compound index for tenant isolation, and how each index maps to a specific query pattern (pipeline view, duplicate detection, date filtering, archive filtering, text search).
-  - **Persisted Computed Fields vs Virtuals:** The design decision to persist `isStale` as a real field rather than computing it on-the-fly as a Mongoose virtual. Trade-off: slightly stale data that needs recalculation triggers, but enables efficient filtering and batch operations.
-  - **Soft Delete Pattern (`isArchived`):** Why archiving is preferred over hard-deleting documents — preserving analytics integrity (funnel conversion rates would be corrupted by missing documents).
-  - **Empty String vs `null` for Optional Enums:** Using `''` as the "not specified" default for optional enum fields (`workMode`, `source`) to avoid `null` checks throughout the codebase while still passing Mongoose enum validation.
+  - **Separate Collection vs. Embedded Array:** Why `interviewrounds` is kept as a dedicated collection rather than embedded in `applications`. A dedicated collection enables fast O(log N) index scans for Action Center triage queries (finding overdue debriefs across all applications) and provides stable `_id` references for child entities.
+  - **Denormalization for Tenant Isolation (Security Rule 9):** Adding `userId` directly on `InterviewRound` documents even though `applicationId` already points to the application. This allows every round and triage query to enforce tenant isolation at the index level without expensive `$lookup` joins.
+  - **Debrief Lifecycle & Nullable Ratings:** Designing `selfRating` (1 to 5) as nullable until the 90-second debrief is completed (`debriefCompleted: true`), ensuring clear state separation between scheduled upcoming rounds and debriefed past rounds.
+  - **Virtual Populate (`localField` / `foreignField`):** Defining virtual relationships (`questions`, `problemLogs`) on `InterviewRound` so related child documents can be populated on demand without storing fragile array-of-IDs in the parent document.
+  - **Compound Temporal Indexes:** Indexing `{ applicationId: 1, scheduledDate: 1 }` for timeline rendering and `{ userId: 1, debriefCompleted: 1, scheduledDate: 1 }` for Action Center triage prompts.
 
 ---
 
@@ -76,6 +76,7 @@ Progress: [#########······························
 
 | Step | Title | Date |
 |---|---|---|
+| 1.3 | Define InterviewRound collection schema | 2026-09-26 |
 | 1.2 | Define Application collection schema | 2026-09-26 |
 | 1.1 | Define User collection schema | 2026-09-26 |
 | 0.11 | Granular task decomposition & project setup files | 2026-09-24 |
@@ -102,9 +103,9 @@ None.
 
 | Step | Title | Phase |
 |---|---|---|
-| 1.3 | Define InterviewRound collection schema | Phase 1: Architecture |
 | 1.4 | Define InterviewQuestion and ProblemLog schemas | Phase 1: Architecture |
 | 1.5 | Define database relationships and index strategy | Phase 1: Architecture |
+| 1.6 | Define Auth API endpoints | Phase 1: Architecture |
 
 ---
 

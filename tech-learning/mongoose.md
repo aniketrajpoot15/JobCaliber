@@ -76,6 +76,7 @@ MongoDB is **schema-less** by design — it accepts any document in any shape. T
 |---|---|
 | `docs/Architecture/DATABASE_SCHEMA.md` §2.5 | Blueprint code for `User` schema |
 | `docs/Architecture/DATABASE_SCHEMA.md` §3.5 | Blueprint code for `Application` schema |
+| `docs/Architecture/DATABASE_SCHEMA.md` §4.5 | Blueprint code for `InterviewRound` schema |
 
 ### Future (Phase 2+ — Implementation):
 | File/Folder | What It Will Do |
@@ -330,6 +331,41 @@ console.log(user.passwordHash);  // "$2b$12$LJ3..." — now it's there
 ```
 
 This prevents accidental exposure of sensitive data.
+
+### Concept 11: Virtual Population (`localField` & `foreignField`)
+
+In relational databases (SQL), you join tables using foreign keys. In Mongoose, what if collection B has an `applicationId` pointing to collection A, and you want to ask collection A: "Give me all rounds that belong to you"?
+
+Without virtual populate, you might think you need to store an array of round IDs inside Application: `rounds: [id1, id2, id3]`. But that leads to data sync bugs (if a round is deleted, the array in Application is now out of date!).
+
+**Virtual Populate** solves this cleanly:
+```javascript
+// On InterviewRound: we define a virtual that finds child questions
+interviewRoundSchema.virtual('questions', {
+  ref: 'InterviewQuestion',      // Which model to query
+  localField: '_id',             // What field on InterviewRound matches...
+  foreignField: 'roundId'        // ...what field on InterviewQuestion
+});
+```
+
+Now you can do:
+```javascript
+const round = await InterviewRound.findById(roundId).populate('questions');
+// round.questions is now an array of questions, without InterviewRound ever storing array of question IDs!
+```
+
+### Concept 12: Embedding vs. Referencing Decision Matrix
+
+When designing Mongoose schemas, a student's most common dilemma is: **Should I embed documents as a sub-array, or make a separate collection and reference it?**
+
+| Criteria | Embed as Subdocument Array (`[ { ... } ]`) | Reference Separate Collection (`ref: '...'`) |
+|---|---|---|
+| **Relationship** | 1-to-Few (e.g., 2-3 contact emails) | 1-to-Many or 1-to-Unbounded |
+| **Child Queries** | Child is NEVER queried independently | Child is frequently queried on its own (e.g. Action Center pending debriefs) |
+| **Document Size** | Data is small; won't approach 16MB BSON limit | Data can grow over time |
+| **Child Relationships**| Child has no children of its own | Child has its own related entities (e.g. `InterviewRound` has `InterviewQuestion` and `ProblemLog`) |
+
+**JobCaliber Application:** We chose **referencing** for `InterviewRound` because the Action Center needs to query pending debriefs across *all* applications directly, and each round has its own children (`questions` and `problem logs`).
 
 ---
 

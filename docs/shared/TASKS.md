@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (2/15 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (3/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -170,7 +170,7 @@
 - **Expected Result:** Schema with roundType enum, scheduledDate, selfRating, debriefCompleted flag.
 - **Verification:** Schema covers FR-07 and FR-08 requirements. roundType enum has all 5 types.
 - **Learn/Review:** Mongoose ObjectId references, referential relationships between collections.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.4 — Define InterviewQuestion and ProblemLog schemas
 - **Objective:** Write Mongoose schemas for `interviewquestions` and `problemlogs` collections.
