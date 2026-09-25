@@ -73,6 +73,7 @@ Without any database, all data would be lost when the server restarts. You could
 | File | What It Does |
 |---|---|
 | `docs/Architecture/DATABASE_SCHEMA.md` | Defines the exact structure of all 5 MongoDB collections (the "blueprint") |
+| `docs/Architecture/DATABASE_SCHEMA.md` §7 & §8 | Text-based ER diagram and Master Index Strategy (20 indexes across 5 collections) |
 | `docs/Research_And_Documentation/DECISIONS.md` (ADR-002) | Documents why MongoDB was chosen over SQL alternatives |
 
 ### Future (Phase 2+ — Implementation):
@@ -191,11 +192,25 @@ Fetch only those 3 documents
 Time: O(log n) — fast even with millions of documents
 ```
 
-**JobCaliber's indexes** (from DATABASE_SCHEMA.md §3.3):
-- `{ userId: 1, status: 1 }` → Fast pipeline view loading
-- `{ userId: 1, companyName: 1, roleTitle: 1 }` → Fast duplicate detection
-- `{ userId: 1, appliedDate: -1 }` → Fast date sorting
-- `{ companyName: 'text', roleTitle: 'text' }` → Full-text search
+**JobCaliber's Key Compound Indexes** (from DATABASE_SCHEMA.md §8):
+- `{ userId: 1, status: 1, isArchived: 1 }` → Fast Kanban pipeline loading
+- `{ userId: 1, debriefCompleted: 1, scheduledDate: 1 }` → Action Center triage (finds overdue debriefs)
+- `{ userId: 1, topicName: 1 }` → Weakness Frequency Heatmap aggregation
+- `{ roundId: 1, topicName: 1 }` (UNIQUE) → Prevents duplicate topic tags in a debrief
+- `{ userId: 1, companyName: 1, roleTitle: 1 }` → Duplicate application detection
+- `{ companyName: 'text', roleTitle: 'text' }` → Full-text search bar
+
+#### Two Golden Rules for Compound Indexes:
+
+1. **The ESR Rule (Equality, Sort, Range):**
+   When creating a compound index for queries that filter and sort, order the index fields as:
+   - **E**quality fields first (`userId: "...", isArchived: false`)
+   - **S**ort fields second (`.sort({ scheduledDate: 1 })`)
+   - **R**ange fields last (`{ scheduledDate: { $lte: now } }`)
+   *Why:* This lets MongoDB sort the results directly from the index without an expensive in-memory sort.
+
+2. **The Left-Prefix Rule:**
+   An index on `{ A: 1, B: 1, C: 1 }` automatically covers queries for `{ A }` and `{ A, B }`. Because all our compound indexes begin with `userId`, we don't need redundant single-field indexes on `userId`.
 
 ### Concept 7: Queries
 

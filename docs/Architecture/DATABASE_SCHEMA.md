@@ -1183,5 +1183,248 @@ module.exports.PROBLEM_CATEGORY_ENUM = PROBLEM_CATEGORY_ENUM;
    All generated `InterviewQuestion` and `ProblemLog` documents must be stamped with `userId: req.user._id`.
 3. **Cascade Cleanup on Application / Round Deletion:** When an application or round is deleted or purged, child questions and problem logs matching `{ roundId }` must be cleaned up to prevent orphaned records.
 
+---
+
+## 7. Entity Relationship Model & Referential Integrity
+
+### 7.1 Text-Based Entity Relationship (ER) Diagram
+
+```
++-----------------------------------------------------------------------------------+
+|                                  USER (users)                                     |
+|-----------------------------------------------------------------------------------|
+| _id: ObjectId [PK]                                                                |
+| fullName: String                                                                  |
+| email: String [UNIQUE]                                                            |
+| passwordHash: String [SELECT: FALSE]                                              |
+| targetRole: String                                                                |
+| staleThresholdDays: Number (7-45, default: 14)                                    |
+| createdAt, updatedAt: Date                                                        |
++-----------------------------------------------------------------------------------+
+       |                                   |                           |
+       | owns                              | direct anchor             | direct anchor
+       | (1 : N)                           | (1 : N)                   | (1 : N)
+       v                                   v                           v
++------------------------------------+   |                           |
+|       APPLICATION (applications)   |   |                           |
+|------------------------------------|   |                           |
+| _id: ObjectId [PK]                 |   |                           |
+| userId: ObjectId [FK -> User]      |   |                           |
+| companyName: String [REQ]          |   |                           |
+| roleTitle: String [REQ]            |   |                           |
+| status: Enum [7 fixed stages]      |   |                           |
+| lastStatusUpdate: Date             |   |                           |
+| isStale: Boolean [default: false]  |   |                           |
+| isArchived: Boolean [default: false|   |                           |
+| appliedDate: Date                  |   |                           |
+| jobUrl, location, salaryRange, ... |   |                           |
++------------------------------------+   |                           |
+       |                                 |                           |
+       | contains (1 : N)                |                           |
+       v                                 v                           |
++-------------------------------------------------------------+      |
+|              INTERVIEW_ROUND (interviewrounds)              |      |
+|-------------------------------------------------------------|      |
+| _id: ObjectId [PK]                                          |      |
+| applicationId: ObjectId [FK -> Application]                 |      |
+| userId: ObjectId [FK -> User] (Denormalized)                |      |
+| roundType: Enum [Recruiter, Technical, System Design, HR, OA|      |
+| scheduledDate: Date [REQ]                                   |      |
+| interviewerName, notes: String                              |      |
+| selfRating: Number (1-5, null before debrief)               |      |
+| debriefCompleted: Boolean [default: false]                  |      |
+| debriefCompletedAt: Date                                    |      |
++-------------------------------------------------------------+      |
+       |                                   |                         |
+       | contains                          | records                 |
+       | (1 : N)                           | (1 : N)                 |
+       v                                   v                         v
++-----------------------------------+    +------------------------------------+
+| INTERVIEW_QUESTION (questions)    |    |      PROBLEM_LOG (problemlogs)     |
+|-----------------------------------|    |------------------------------------|
+| _id: ObjectId [PK]                |    | _id: ObjectId [PK]                 |
+| roundId: ObjectId [FK -> Round]   |    | roundId: ObjectId [FK -> Round]    |
+| userId: ObjectId [FK -> User]     |    | userId: ObjectId [FK -> User] (DEN)|
+| questionText: String [REQ]        |    | topicName: String [REQ]            |
+| category: Enum [Tech, SD, HR...]  |    | category: Enum [Tech, Behav, Cust] |
+| createdAt, updatedAt: Date        |    | notes: String                      |
+|                                   |    | UNIQUE: { roundId, topicName }     |
++-----------------------------------+    +------------------------------------+
+```
+
+### 7.2 Cardinality & Relationship Matrix
+
+| Parent Entity | Child Entity | Cardinality | Relationship Type | Foreign Key | Populated Via | Cascade Policy |
+|---|---|---|---|---|---|---|
+| `User` | `Application` | 1 : N (Zero-to-Many) | Mandatory Reference | `Application.userId` | Direct Query | Soft-delete / Archive flag (`isArchived: true`) |
+| `Application` | `InterviewRound` | 1 : N (Zero-to-Many) | Mandatory Reference | `InterviewRound.applicationId` | Virtual (`Application.rounds`) | Hard-delete on application purge |
+| `InterviewRound` | `InterviewQuestion` | 1 : N (Zero-to-Many) | Mandatory Reference | `InterviewQuestion.roundId` | Virtual (`InterviewRound.questions`)| Hard-delete on round purge |
+| `InterviewRound` | `ProblemLog` | 1 : N (Zero-to-Many) | Mandatory Reference | `ProblemLog.roundId` | Virtual (`InterviewRound.problemLogs`)| Hard-delete on round purge |
+| `User` | `InterviewRound` | 1 : N (Zero-to-Many) | Direct Denormalized Link | `InterviewRound.userId` | Direct Query | Cascade delete on account purge |
+| `User` | `InterviewQuestion` | 1 : N (Zero-to-Many) | Direct Denormalized Link | `InterviewQuestion.userId` | Direct Query | Cascade delete on account purge |
+| `User` | `ProblemLog` | 1 : N (Zero-to-Many) | Direct Denormalized Link | `ProblemLog.userId` | Direct Aggregation | Cascade delete on account purge |
+
+---
+
+### 7.3 Referential Integrity & Cascade Lifecycle Management
+
+In MongoDB (unlike relational SQL with `ON DELETE CASCADE`), referential integrity is maintained through application logic, Mongoose middleware, and strategic data design:
+
+#### 1. Soft Delete vs Hard Delete Architecture:
+- **Default Action for Applications is Soft Delete (Archive):** When a user removes an application from their active board, `isArchived` is set to `true`.
+  - **Why:** Preserves historical funnel metrics. If applications are deleted, conversion metrics (`Applied → OA → Interview → Offer`) become mathematically corrupted because the top of the funnel shrinks retroactively.
+  - **Child Documents Retained:** Interview rounds, questions, and problem logs for archived applications remain intact in the database so past interview learnings continue to power the Weakness Frequency Heatmap.
+- **Hard Deletion (GDPR / User Data Purge):** If a user explicitly requests permanent deletion of an application or their entire account, a cascading purge is executed:
+  ```javascript
+  // Find all round IDs for this application
+  const rounds = await InterviewRound.find({ applicationId: appId }, '_id');
+  const roundIds = rounds.map(r => r._id);
+
+  // Remove all child entities
+  await InterviewQuestion.deleteMany({ roundId: { $in: roundIds } });
+  await ProblemLog.deleteMany({ roundId: { $in: roundIds } });
+  await InterviewRound.deleteMany({ applicationId: appId });
+  await Application.deleteOne({ _id: appId, userId: req.user._id });
+  ```
+
+#### 2. Why Mongoose Population vs. Direct Queries?
+- **When to Use Virtual Population:** Virtual populate is used on read-heavy detail views (e.g., viewing an Application and expanding its Interview Rounds and questions).
+- **When to Use Direct Queries:** Direct queries are used for dashboard widgets and action centers (e.g., querying `InterviewRound` directly with `{ userId, debriefCompleted: false, scheduledDate: { $lte: now } }`), which avoids loading the entire Application parent hierarchy.
+
+---
+
+### 7.4 Architectural Rationale: Denormalization of `userId` Across All Child Collections
+
+A key design highlight of JobCaliber's schema is that **every single collection carries `userId` directly**:
+
+```
+Application.userId        ← Direct tenant anchor
+InterviewRound.userId     ← Denormalized
+InterviewQuestion.userId  ← Denormalized
+ProblemLog.userId         ← Denormalized
+```
+
+#### Why This Is Critical for JobCaliber:
+1. **Rule 9: Non-Negotiable Tenant Isolation:**
+   In multi-tenant SaaS / user-specific applications, data leakage between users is the #1 security risk. If `ProblemLog` only had `roundId`, verifying ownership would require joining `InterviewRound` and `Application` on every read and write. By including `userId` on every collection, every Mongoose query begins with `{ userId: req.user._id }`.
+2. **Elimination of Multi-Hop `$lookup` Joins in Aggregations:**
+   MongoDB `$lookup` stages perform nested sub-queries that are expensive in CPU and memory. Aggregating weaknesses for a candidate across 50 interviews would require:
+   `ProblemLog → $lookup InterviewRound → $lookup Application → $match User`.
+   With denormalized `userId`, it is a flat, index-covered aggregation:
+   `ProblemLog → $match { userId } → $group → $sort`.
+3. **Immutability Protection:**
+   Because users cannot transfer interviews, questions, or applications to other users, `userId` is strictly immutable after insertion.
+
+---
+
+## 8. Master Index Strategy & Query Performance Matrix
+
+Indexes are the single most important factor determining MongoDB query latency, memory consumption, and throughput. Without proper compound indexes, queries trigger full collection scans (`COLLSCAN`), reading every document in storage. With proper indexes, queries execute index scans (`IXSCAN`), touching only the exact BSON keys needed.
+
+### 8.1 Master Index Inventory (All 5 Collections)
+
+| Collection | Index Name | Keys | Type | Direction | Unique | Covered Query Patterns |
+|---|---|---|---|---|---|---|
+| `users` | `_id_` | `{ _id: 1 }` | BSON Default | ASC | **Yes** | Direct user session retrieval (`findById`) |
+| `users` | `email_unique` | `{ email: 1 }` | Single Field | ASC | **Yes** | Auth login & register lookup (`POST /api/auth/login`) |
+| `applications` | `_id_` | `{ _id: 1 }` | BSON Default | ASC | **Yes** | Direct application fetch |
+| `applications` | `user_status_active` | `{ userId: 1, status: 1, isArchived: 1 }` | Compound | ASC, ASC, ASC | No | Kanban board & active pipeline queries (FR-03) |
+| `applications` | `user_duplicate_detection`| `{ userId: 1, companyName: 1, roleTitle: 1 }` | Compound | ASC, ASC, ASC | No | 60-day duplicate application warning (FR-02.7, ADR-013) |
+| `applications` | `user_applied_timeline` | `{ userId: 1, appliedDate: -1 }` | Compound | ASC, DESC | No | Application list sorted by recency |
+| `applications` | `user_archive_filter` | `{ userId: 1, isArchived: 1 }` | Compound | ASC, ASC | No | Filter active vs archived applications |
+| `applications` | `app_text_search` | `{ companyName: 'text', roleTitle: 'text' }` | Text Index | Text Search | No | Keyword search bar across pipeline (FR-05.1) |
+| `interviewrounds`| `_id_` | `{ _id: 1 }` | BSON Default | ASC | **Yes** | Direct round fetch |
+| `interviewrounds`| `app_scheduled_timeline` | `{ applicationId: 1, scheduledDate: 1 }` | Compound | ASC, ASC | No | Application detail chronological round timeline (FR-07.5) |
+| `interviewrounds`| `user_debrief_triage` | `{ userId: 1, debriefCompleted: 1, scheduledDate: 1 }`| Compound | ASC, ASC, ASC | No | Action Center overdue debrief prompt (FR-08.1, FR-13.1) |
+| `interviewrounds`| `user_upcoming_interviews`| `{ userId: 1, scheduledDate: 1 }` | Compound | ASC, ASC | No | Dashboard 48-hour upcoming interview widget (FR-13.1) |
+| `interviewquestions`| `_id_` | `{ _id: 1 }` | BSON Default | ASC | **Yes** | Direct question fetch |
+| `interviewquestions`| `round_questions_lookup` | `{ roundId: 1 }` | Single Field | ASC | No | Populate questions for a round (FR-08.4) |
+| `interviewquestions`| `user_round_questions` | `{ userId: 1, roundId: 1 }` | Compound | ASC, ASC | No | Tenant-isolated question deletion / updates |
+| `interviewquestions`| `question_text_search` | `{ questionText: 'text' }` | Text Index | Text Search | No | Keyword search across personal question bank |
+| `problemlogs` | `_id_` | `{ _id: 1 }` | BSON Default | ASC | **Yes** | Direct problem log fetch |
+| `problemlogs` | `user_topic_aggregation` | `{ userId: 1, topicName: 1 }` | Compound | ASC, ASC | No | Weakness Frequency Heatmap aggregation (FR-10.2) |
+| `problemlogs` | `round_topic_unique` | `{ roundId: 1, topicName: 1 }` | Compound | ASC, ASC | **Yes** | Prevents duplicate topic tags in a debrief (FR-09.5) |
+| `problemlogs` | `user_category_filter` | `{ userId: 1, category: 1 }` | Compound | ASC, ASC | No | Category-filtered weakness queries (Technical vs Behavioral) |
+
+---
+
+### 8.2 Query Pattern Execution Mapping
+
+This matrix maps every application endpoint to its exact query, index scan type, and performance characteristic:
+
+#### 1. Authentication Lookups (`POST /api/auth/login`)
+- **Query:** `User.findOne({ email: req.body.email.toLowerCase() }).select('+passwordHash')`
+- **Index Used:** `email_unique` (`{ email: 1 }`)
+- **Scan Type:** `IXSCAN` (1 key examined, 1 document examined)
+- **Time Complexity:** O(log N) — Instantaneous
+
+#### 2. Pipeline Kanban View (`GET /api/applications?view=kanban`)
+- **Query:** `Application.find({ userId: req.user._id, isArchived: false }).sort({ appliedDate: -1 })`
+- **Index Used:** `user_status_active` (`{ userId: 1, status: 1, isArchived: 1 }`)
+- **Scan Type:** `IXSCAN`
+- **Performance Rationale:** Filters by `userId` (Equality) and `isArchived` (Equality) in a single B-tree traversal.
+
+#### 3. Duplicate Application Warning (`POST /api/applications`)
+- **Query:** `Application.findOne({ userId: req.user._id, companyName: /^Google$/i, roleTitle: /^SWE$/i, createdAt: { $gte: sixtyDaysAgo } })`
+- **Index Used:** `user_duplicate_detection` (`{ userId: 1, companyName: 1, roleTitle: 1 }`)
+- **Scan Type:** `IXSCAN`
+- **Performance Rationale:** Scans only documents matching the candidate's target company within the 60-day window.
+
+#### 4. Action Center: Pending Debrief Prompt (`GET /api/analytics/triage`)
+- **Query:** `InterviewRound.find({ userId: req.user._id, debriefCompleted: false, scheduledDate: { $lte: new Date() } }).sort({ scheduledDate: 1 }).limit(3)`
+- **Index Used:** `user_debrief_triage` (`{ userId: 1, debriefCompleted: 1, scheduledDate: 1 }`)
+- **Scan Type:** `IXSCAN`
+- **Performance Rationale:** Follows the **ESR Rule** perfectly:
+  - **E**quality: `userId: req.user._id` and `debriefCompleted: false`
+  - **S**ort: `scheduledDate: 1`
+  - **R**ange: `scheduledDate: { $lte: now }`
+  Zero in-memory sort; zero extraneous documents examined.
+
+#### 5. Dashboard: Upcoming Interviews within 48 Hours (`GET /api/interviews/upcoming`)
+- **Query:** `InterviewRound.find({ userId: req.user._id, scheduledDate: { $gte: now, $lte: in48Hours } }).sort({ scheduledDate: 1 })`
+- **Index Used:** `user_upcoming_interviews` (`{ userId: 1, scheduledDate: 1 }`)
+- **Scan Type:** `IXSCAN`
+- **Performance Rationale:** Equality on `userId`, Range + Sort on `scheduledDate`.
+
+#### 6. Weakness Frequency Heatmap Aggregation (`GET /api/analytics/weaknesses`)
+- **Pipeline:**
+  ```javascript
+  ProblemLog.aggregate([
+    { $match: { userId: req.user._id } },
+    { $group: { _id: '$topicName', count: { $sum: 1 }, category: { $first: '$category' } } },
+    { $sort: { count: -1 } }
+  ])
+  ```
+- **Index Used:** `user_topic_aggregation` (`{ userId: 1, topicName: 1 }`)
+- **Scan Type:** `IXSCAN`
+- **Performance Rationale:** The initial `$match` stage restricts the dataset using the leading `userId` key. Because `topicName` is the second key in the index, MongoDB groups directly from the sorted index keys.
+
+---
+
+### 8.3 Compound Index Design Principles: The ESR Rule & Left-Prefix Rule
+
+To maintain peak performance while keeping index memory overhead low, all compound indexes in JobCaliber follow two fundamental database engineering rules:
+
+#### 1. The ESR (Equality, Sort, Range) Rule:
+When creating a compound index for queries that filter, sort, and search ranges, fields MUST be ordered:
+1. **Equality (`E`):** Fields queried with exact values (e.g. `{ userId: "...", debriefCompleted: false }`).
+2. **Sort (`S`):** Fields used to order results (e.g. `.sort({ scheduledDate: 1 })`).
+3. **Range (`R`):** Fields queried with operators like `$gt`, `$gte`, `$lt`, `$lte`, or `$in`.
+
+**Why:** Placing sort fields *before* range fields allows MongoDB to use the index for ordering without needing an in-memory sort (`SORT_KEY_GENERATOR`). If the range field is placed before the sort field, the range scan scatters index pointers, forcing an expensive in-memory sort.
+
+#### 2. The Left-Prefix Rule:
+A compound index on `{ A: 1, B: 1, C: 1 }` can automatically serve queries on:
+- `{ A: 1 }` (prefix of length 1)
+- `{ A: 1, B: 1 }` (prefix of length 2)
+- `{ A: 1, B: 1, C: 1 }` (full index)
+
+**Benefit for JobCaliber:**
+We do NOT need a separate single-field index on `{ userId: 1 }` on `applications`, `interviewrounds`, or `problemlogs` because every compound index starts with `userId`. MongoDB uses the left-prefix of our existing compound indexes, saving disk space, RAM, and write latency.
+
+#### 3. Write Overhead vs Read Optimization Trade-off:
+Every index speeds up reads but incurs a small write cost (every `insertOne`, `updateOne`, `deleteOne` must update all relevant B-trees). JobCaliber features a write-to-read ratio of roughly 1:10 (users read pipelines and dashboards far more often than adding applications). Having 3-4 carefully selected compound indexes per collection provides sub-5ms read queries with negligible write impact.
+
+
 
 

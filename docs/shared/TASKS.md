@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (4/15 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (5/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -190,7 +190,7 @@
 - **Expected Result:** ER diagram (text-based), compound index list with query justification.
 - **Verification:** Every index maps to a specific query pattern (search, filter, aggregation).
 - **Learn/Review:** MongoDB index strategy, compound indexes, how indexes speed up queries.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.6 — Define Auth API endpoints
 - **Objective:** Specify the exact request/response contract for `/api/auth/*` endpoints.
