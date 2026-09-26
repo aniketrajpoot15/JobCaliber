@@ -134,7 +134,7 @@ USER (1) ── aggregates ──► (N) PROBLEM_LOG
 | `/api/interviews` | Rounds + debriefs | create round, submit debrief, get upcoming |
 | `/api/analytics` | Aggregations | funnel, weaknesses, resume-cohorts, triage |
 
-**Full API specification:** See `docs/Architecture/API_SPEC.md` (to be created in Architecture phase)
+**Full API specification:** See `docs/Architecture/API_SPEC.md` (created in Step 1.6)
 
 ---
 
@@ -202,13 +202,10 @@ JobCaliber/
 │   │   └── PRODUCT_SPEC.md
 │   ├── Architecture/         # Phase 1: Architecture specifications
 │   │   ├── DATABASE_SCHEMA.md
-│   │   ├── ARCHITECTURE.md   # (to be created)
-│   │   ├── API_SPEC.md       # (to be created)
-│   │   ├── UI_SPEC.md        # (to be created)
-│   │   ├── ANALYTICS_SPEC.md # (to be created)
-│   │   ├── SECURITY.md       # (to be created)
-│   │   ├── TESTING_STRATEGY.md # (to be created)
-│   │   └── USER_FLOWS.md     # (to be created)
+│   │   ├── API_SPEC.md
+│   │   ├── UI_SPEC.md
+│   │   ├── ANALYTICS_SPEC.md
+│   │   └── SECURITY.md
 │   └── shared/               # Implementation tracking
 │       ├── TASKS.md
 │       └── PROJECT_PROGRESS.md
@@ -395,8 +392,8 @@ The AI coding agent must NEVER:
 
 ```
 Phase 0: Research & Documentation  ──► ✅ COMPLETE (Steps 0.1–0.11)
-Phase 1: Architecture              ──► ⬜ NEXT (DB schema, API spec, UI spec)
-Phase 2: Foundation                ──► ⬜ (Project scaffolding, DB connection, Auth)
+Phase 1: Architecture              ──► 🟡 IN PROGRESS (Steps 1.1–1.14 complete; Step 1.15 review)
+Phase 2: Foundation                ──► ⬜ NEXT (Project scaffolding, DB connection, Auth)
 Phase 3: Core Data                 ──► ⬜ (Application model, Quick-Add, Pipeline views)
 Phase 4: Pipeline Engine           ──► ⬜ (Status updates, Stale engine, Action Center)
 Phase 5: Interview & Debrief       ──► ⬜ (Rounds, Debrief modal, Problem logging)

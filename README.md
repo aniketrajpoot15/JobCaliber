@@ -193,8 +193,8 @@ USER ──► APPLICATION ──► INTERVIEW_ROUND ──► INTERVIEW_QUESTIO
 | Phase | Description | Status |
 |---|---|---|
 | Phase 0 | Research & Documentation | ✅ Complete |
-| Phase 1 | Architecture (DB, API, UI specs) | ⬜ Next |
-| Phase 2 | Foundation (scaffolding, DB, Auth) | ⬜ |
+| Phase 1 | Architecture (DB, API, UI, Analytics, Security) | 🟡 In Progress (14/15 steps) |
+| Phase 2 | Foundation (scaffolding, DB, Auth) | ⬜ Next |
 | Phase 3 | Core Data (Application model, Quick-Add, Pipeline) | ⬜ |
 | Phase 4 | Pipeline Engine (Status updates, Stale, Action Center) | ⬜ |
 | Phase 5 | Interview & Debrief (Rounds, Modal, Problem logs) | ⬜ |
@@ -210,6 +210,11 @@ USER ──► APPLICATION ──► INTERVIEW_ROUND ──► INTERVIEW_QUESTIO
 | [PROJECT_MASTER_SPEC.md](docs/Research_And_Documentation/PROJECT_MASTER_SPEC.md) | Complete product knowledge base (65 sections) |
 | [PRD.md](docs/Research_And_Documentation/PRD.md) | Requirements, user stories, acceptance criteria |
 | [DECISIONS.md](docs/Research_And_Documentation/DECISIONS.md) | Architecture decision records (14 ADRs) |
+| [DATABASE_SCHEMA.md](docs/Architecture/DATABASE_SCHEMA.md) | Database schemas, collections, indexes & virtuals |
+| [API_SPEC.md](docs/Architecture/API_SPEC.md) | Complete REST API specification & request/response contracts |
+| [UI_SPEC.md](docs/Architecture/UI_SPEC.md) | Pages, routes, component tree & 3D tactile design system |
+| [ANALYTICS_SPEC.md](docs/Architecture/ANALYTICS_SPEC.md) | Aggregation pipelines, guardrails & Action Center triage logic |
+| [SECURITY.md](docs/Architecture/SECURITY.md) | 10-stage middleware pipeline, tenant isolation & OWASP defense |
 | [TASKS.md](docs/shared/TASKS.md) | Implementation roadmap (147 granular steps, 8 phases) |
 | [PROJECT_PROGRESS.md](docs/shared/PROJECT_PROGRESS.md) | Central progress tracking dashboard |
 | [tech-learning/](tech-learning/README.md) | Technology learning hub — one file per technology |
