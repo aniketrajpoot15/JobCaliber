@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (5/15 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (7/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -200,7 +200,7 @@
 - **Expected Result:** 4 endpoints fully specified: register, login, logout, me. Each with method, path, request body, response shape, error responses.
 - **Verification:** Covers FR-01.1 through FR-01.7. Rate limit rules documented.
 - **Learn/Review:** REST API design conventions, HTTP status codes, error response patterns.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.7 — Define Application CRUD API endpoints
 - **Objective:** Specify the request/response contract for `/api/applications/*` endpoints.
@@ -210,7 +210,7 @@
 - **Expected Result:** 6+ endpoints specified with query param filters, pagination, and duplicate detection.
 - **Verification:** Covers FR-02, FR-03, FR-04, FR-05. Tenant isolation documented on every endpoint.
 - **Learn/Review:** Query parameter design, pagination patterns, RESTful status update patterns.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.8 — Define Interview & Debrief API endpoints
 - **Objective:** Specify the request/response contract for `/api/interviews/*` endpoints.
@@ -220,7 +220,7 @@
 - **Expected Result:** 5+ endpoints: create round, get rounds, submit debrief, update debrief, upcoming.
 - **Verification:** Debrief endpoint specifies the nested request body structure clearly.
 - **Learn/Review:** Transactional API design (saving multiple related documents in one request).
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.9 — Define Analytics API endpoints
 - **Objective:** Specify the request/response contract for `/api/analytics/*` endpoints.

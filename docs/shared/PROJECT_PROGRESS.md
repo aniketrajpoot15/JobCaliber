@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 16 |
-| **Remaining Steps** | 131 |
-| **Overall Progress** | **11%** |
+| **Completed Steps** | 19 |
+| **Remaining Steps** | 128 |
+| **Overall Progress** | **13%** |
 | **Current Phase** | Phase 1 — Architecture (In Progress) |
-| **Current Step** | Step 1.6 — Define Auth API endpoints |
-| **Current Status** | `READY` (Step 1.5 Complete; Awaiting approval for Step 1.6) |
+| **Current Step** | Step 1.9 — Define Analytics API endpoints |
+| **Current Status** | `READY` (Step 1.8 Complete; Awaiting approval for Step 1.9) |
 
 ```
-Progress: [###########·····································] 11%
-           16 / 147 steps
+Progress: [#############···································] 13%
+           19 / 147 steps
 ```
 
 ---
@@ -32,7 +32,7 @@ Progress: [###########·····························
 | Phase | Total Steps | Completed | Remaining | Progress | Status |
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
-| Phase 1: Architecture | 15 | 5 | 10 | 33% | 🟡 In Progress |
+| Phase 1: Architecture | 15 | 8 | 7 | 53% | 🟡 In Progress |
 | Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
@@ -44,31 +44,32 @@ Progress: [###########·····························
 
 ## Next Step
 
-### Step 1.6 — Define Auth API endpoints
+### Step 1.9 — Define Analytics API endpoints
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 1: Architecture |
-| **Objective** | Specify the exact request/response contract for `/api/auth/*` endpoints. |
-| **Why** | API contracts prevent ambiguity during implementation — both sides agree on shapes. |
-| **Files involved** | `docs/Architecture/API_SPEC.md` (to be created — Auth section) |
-| **Expected result** | 4 endpoints fully specified: register, login, logout, me. Each with method, path, request body, response shape, error responses. |
-| **Verification** | Covers FR-01.1 through FR-01.7. Rate limit rules documented. |
+| **Objective** | Specify the request/response contract for `/api/analytics/*` endpoints. |
+| **Why** | Analytics endpoints return aggregated data — their response shapes must be clearly defined for the frontend. |
+| **Files involved** | `docs/Architecture/API_SPEC.md` (update — Analytics section) |
+| **Expected result** | 4 endpoints: funnel, weaknesses, resume-cohorts, triage. Response shapes include guardrail metadata. |
+| **Verification** | Triage endpoint priority rules documented. Guardrail thresholds included in response. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 1.5 — Define database relationships and index strategy
+### Step 1.8 — Define Interview & Debrief API endpoints
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/Architecture/DATABASE_SCHEMA.md` (updated — Sections 7 & 8), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/mongodb.md`
+- **Files Created/Modified:** `docs/Architecture/API_SPEC.md` (updated — Section 6), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/rest-api.md`
 - **Key Concepts Specified:**
-  - **Entity Relationship Model & Cardinalities:** Formulated a complete text-based ER diagram detailing 1:N cardinalities across all 5 collections, identifying primary keys, foreign references, and virtual populate paths.
-  - **Referential Integrity & Cascade Lifecycle Management:** Specified soft delete preservation (`isArchived: true` for applications to protect funnel conversion metrics) versus cascading hard deletes on account data purge.
-  - **Master Index Inventory (20 Indexes):** Consolidated all single, compound, text, and unique indexes across the system, verifying that every major API query maps to a sub-5ms index scan (`IXSCAN`).
-  - **The ESR Rule (Equality, Sort, Range):** Documented how compound index field ordering prevents expensive in-memory sorts (`SORT_KEY_GENERATOR`).
-  - **The Left-Prefix Rule:** Leveraged left prefixes of compound indexes starting with `userId` to eliminate redundant single-field indexes, saving storage and write overhead.
+  - **Transactional Debrief Endpoint (FR-08, FR-09):** Specified atomic multi-collection persistence inside a MongoDB session transaction for `POST /api/interviews/:id/debrief` — saving round rating/notes, inserting questions, and logging stumbled topics simultaneously without partial failure risk.
+  - **Cross-Entity Status Synchronization:** When scheduling an interview round (`POST /api/interviews`), the parent application is automatically advanced from `Saved`, `Applied`, or `OA / Screening` to `Interviewing`, resetting the stale timer.
+  - **Lookahead Window & Countdown Computation (FR-07.4, FR-13.1):** Designed `GET /api/interviews/upcoming` with a lookahead filter (`?days=7`) and computed `hoursUntilInterview` field to power Dashboard cards and Action Center Nudge #1 (< 48 hours).
+  - **Guardrail Metadata in Response (ADR-005):** Included `analyticsGuardrailStatus` (tracking progress toward 5 debriefs) in the debrief response so the client UI can celebrate progress and explain why the heatmap is still locked.
+  - **Full Replacement Semantics with PUT:** Designed `PUT /api/interviews/:id/debrief` to replace child questions and problem logs atomically rather than executing complex diffing.
+  - **Cascade Deletion:** Specified cascade removal of child questions and problem logs when an interview round is deleted.
 
 ---
 
@@ -76,6 +77,9 @@ Progress: [###########·····························
 
 | Step | Title | Date |
 |---|---|---|
+| 1.8 | Define Interview & Debrief API endpoints | 2026-09-26 |
+| 1.7 | Define Application CRUD API endpoints | 2026-09-26 |
+| 1.6 | Define Auth API endpoints | 2026-09-26 |
 | 1.5 | Define database relationships and index strategy | 2026-09-26 |
 | 1.4 | Define InterviewQuestion and ProblemLog schemas | 2026-09-26 |
 | 1.3 | Define InterviewRound collection schema | 2026-09-26 |
@@ -105,9 +109,9 @@ None.
 
 | Step | Title | Phase |
 |---|---|---|
-| 1.6 | Define Auth API endpoints | Phase 1: Architecture |
-| 1.7 | Define Application CRUD API endpoints | Phase 1: Architecture |
 | 1.8 | Define Interview & Debrief API endpoints | Phase 1: Architecture |
+| 1.9 | Define Analytics API endpoints | Phase 1: Architecture |
+| 1.10 | Define page inventory and routing structure | Phase 1: Architecture |
 
 ---
 
@@ -116,7 +120,7 @@ None.
 | Milestone | Steps Complete | Target | Status |
 |---|---|---|---|
 | 📄 Documentation complete | 11/11 | Phase 0 | ✅ Complete |
-| 📐 Architecture complete | 2/15 | Phase 1 | 🟡 In Progress |
+| 📐 Architecture complete | 7/15 | Phase 1 | 🟡 In Progress |
 | 🔐 Auth working (end-to-end) | 0/36 | Phase 2 | ⬜ |
 | 📋 Pipeline working (Kanban + Table) | 0/31 | Phase 3 | ⬜ |
 | ⏰ Stale + Action Center working | 0/9 | Phase 4 | ⬜ |

@@ -5,7 +5,7 @@
 > **Purpose:** Learn every technology used in JobCaliber, one at a time, in the right order.  
 > **Rule:** A technology file is only created when that technology is actively used or being designed in the project. No premature documentation.  
 > **Last Updated:** 2026-09-26  
-> **Current Phase:** Phase 1 — Architecture (Steps 1.1–1.2 complete)
+> **Current Phase:** Phase 1 — Architecture (Steps 1.1–1.6 complete)
 
 ---
 
@@ -46,7 +46,7 @@ Each file follows a consistent 13-section structure:
 | 1 | **Git** | [git.md](./git.md) | Version Control | ✅ `ACTIVE` | Step 0.11 |
 | 2 | **MongoDB** | [mongodb.md](./mongodb.md) | Database | 🟡 `DESIGNING` | Step 1.1 |
 | 3 | **Mongoose** | [mongoose.md](./mongoose.md) | ODM (Object Data Modeling) | 🟡 `DESIGNING` | Step 1.1 |
-| 4 | REST API Design | `rest-api.md` | Architecture Pattern | ⬜ `PLANNED` — Step 1.6 | — |
+| 4 | **REST API Design** | [rest-api.md](./rest-api.md) | Architecture Pattern | 🟡 `DESIGNING` | Step 1.6 |
 | 5 | Node.js | `nodejs.md` | Runtime | ⬜ `PLANNED` — Step 2.1 | — |
 | 6 | Express.js | `express.md` | Backend Framework | ⬜ `PLANNED` — Step 2.3 | — |
 | 7 | bcryptjs | `bcrypt.md` | Password Hashing | ⬜ `PLANNED` — Step 2.7 | — |
@@ -69,14 +69,14 @@ Each file follows a consistent 13-section structure:
 Step 1: Git           → How version control works, .gitignore, commits
 Step 2: MongoDB       → What a document database is, collections, documents, indexes
 Step 3: Mongoose      → What an ODM is, schemas, validation, enums, references
+Step 4: REST API      → What REST is, HTTP methods, status codes, endpoint design
 ```
 
-> You should understand these three BEFORE moving to Phase 2.
+> You should understand these four BEFORE moving to Phase 2.
 
 ### Phase 2 — Foundation (when you get here)
 
 ```
-Step 4: REST API      → What REST is, HTTP methods, status codes, endpoint design
 Step 5: Node.js       → What a runtime is, event loop, npm, package.json
 Step 6: Express.js    → What a framework is, routes, middleware, request/response
 Step 7: bcryptjs      → How password hashing works, salt rounds, why not plaintext
@@ -149,5 +149,6 @@ tech-learning/
 ├── git.md           ← ✅ Active
 ├── mongodb.md       ← 🟡 Designing
 ├── mongoose.md      ← 🟡 Designing
+├── rest-api.md      ← 🟡 Designing (NEW — Step 1.6)
 └── (future files created when technologies are introduced)
 ```
