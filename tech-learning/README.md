@@ -5,7 +5,7 @@
 > **Purpose:** Learn every technology used in JobCaliber, one at a time, in the right order.  
 > **Rule:** A technology file is only created when that technology is actively used or being designed in the project. No premature documentation.  
 > **Last Updated:** 2026-09-26  
-> **Current Phase:** Phase 1 — Architecture (Steps 1.1–1.6 complete)
+> **Current Phase:** Phase 1 — Architecture (Steps 1.1–1.11 complete)
 
 ---
 

@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (7/15 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (11/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -230,7 +230,7 @@
 - **Expected Result:** 4 endpoints: funnel, weaknesses, resume-cohorts, triage. Response shapes include guardrail metadata.
 - **Verification:** Triage endpoint priority rules documented. Guardrail thresholds included in response.
 - **Learn/Review:** API design for aggregated data, including metadata alongside results.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.10 — Define page inventory and routing structure
 - **Objective:** List every page in the app, its URL route, and whether it requires authentication.
@@ -240,7 +240,7 @@
 - **Expected Result:** Page list: Login, Register, Dashboard, Pipeline, Application Detail, Analytics, Settings.
 - **Verification:** Every page maps to at least one feature from the PRD.
 - **Learn/Review:** React Router route planning, protected vs. public routes.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.11 — Define component hierarchy and layout structure
 - **Objective:** Define the shared layout (Navbar, Sidebar, Content area) and reusable component tree.
@@ -250,7 +250,7 @@
 - **Expected Result:** Component tree: Layout → {Navbar, Sidebar, Content}. Reusable: Button, Modal, Card, Badge, etc.
 - **Verification:** Quick-Add Modal, Debrief Modal, and Action Center widget identified as key components.
 - **Learn/Review:** React component composition, layout patterns, reusability principles.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.12 — Define MongoDB aggregation pipelines for analytics
 - **Objective:** Write the exact aggregation pipeline stages for funnel, weakness heatmap, and resume cohort.

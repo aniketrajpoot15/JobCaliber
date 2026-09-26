@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 19 |
-| **Remaining Steps** | 128 |
-| **Overall Progress** | **13%** |
+| **Completed Steps** | 22 |
+| **Remaining Steps** | 125 |
+| **Overall Progress** | **15%** |
 | **Current Phase** | Phase 1 — Architecture (In Progress) |
-| **Current Step** | Step 1.9 — Define Analytics API endpoints |
-| **Current Status** | `READY` (Step 1.8 Complete; Awaiting approval for Step 1.9) |
+| **Current Step** | Step 1.12 — Define MongoDB aggregation pipelines for analytics |
+| **Current Status** | `READY` (Step 1.11 Complete; Awaiting approval for Step 1.12) |
 
 ```
-Progress: [#############···································] 13%
-           19 / 147 steps
+Progress: [###############·································] 15%
+           22 / 147 steps
 ```
 
 ---
@@ -32,7 +32,7 @@ Progress: [#############····························
 | Phase | Total Steps | Completed | Remaining | Progress | Status |
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
-| Phase 1: Architecture | 15 | 8 | 7 | 53% | 🟡 In Progress |
+| Phase 1: Architecture | 15 | 11 | 4 | 73% | 🟡 In Progress |
 | Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
@@ -44,32 +44,30 @@ Progress: [#############····························
 
 ## Next Step
 
-### Step 1.9 — Define Analytics API endpoints
+### Step 1.12 — Define MongoDB aggregation pipelines for analytics
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 1: Architecture |
-| **Objective** | Specify the request/response contract for `/api/analytics/*` endpoints. |
-| **Why** | Analytics endpoints return aggregated data — their response shapes must be clearly defined for the frontend. |
-| **Files involved** | `docs/Architecture/API_SPEC.md` (update — Analytics section) |
-| **Expected result** | 4 endpoints: funnel, weaknesses, resume-cohorts, triage. Response shapes include guardrail metadata. |
-| **Verification** | Triage endpoint priority rules documented. Guardrail thresholds included in response. |
+| **Objective** | Write the exact aggregation pipeline stages for funnel, weakness heatmap, and resume cohort. |
+| **Why** | Aggregation pipelines are the most complex backend logic — defining them upfront prevents guesswork. |
+| **Files involved** | `docs/Architecture/ANALYTICS_SPEC.md` (created) |
+| **Expected result** | 3 pipeline definitions with $match, $group, $sort stages. Guardrail logic documented. |
+| **Verification** | Funnel counts match the 4 progression stages. Weakness pipeline groups by topicName. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 1.8 — Define Interview & Debrief API endpoints
+### Step 1.11 — Define component hierarchy, layout structure & design system
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/Architecture/API_SPEC.md` (updated — Section 6), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/rest-api.md`
+- **Files Created/Modified:** `docs/Architecture/UI_SPEC.md` (updated — Sections 3 & 4), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/README.md`, Artifact: `design_mockups.md`
 - **Key Concepts Specified:**
-  - **Transactional Debrief Endpoint (FR-08, FR-09):** Specified atomic multi-collection persistence inside a MongoDB session transaction for `POST /api/interviews/:id/debrief` — saving round rating/notes, inserting questions, and logging stumbled topics simultaneously without partial failure risk.
-  - **Cross-Entity Status Synchronization:** When scheduling an interview round (`POST /api/interviews`), the parent application is automatically advanced from `Saved`, `Applied`, or `OA / Screening` to `Interviewing`, resetting the stale timer.
-  - **Lookahead Window & Countdown Computation (FR-07.4, FR-13.1):** Designed `GET /api/interviews/upcoming` with a lookahead filter (`?days=7`) and computed `hoursUntilInterview` field to power Dashboard cards and Action Center Nudge #1 (< 48 hours).
-  - **Guardrail Metadata in Response (ADR-005):** Included `analyticsGuardrailStatus` (tracking progress toward 5 debriefs) in the debrief response so the client UI can celebrate progress and explain why the heatmap is still locked.
-  - **Full Replacement Semantics with PUT:** Designed `PUT /api/interviews/:id/debrief` to replace child questions and problem logs atomically rather than executing complex diffing.
-  - **Cascade Deletion:** Specified cascade removal of child questions and problem logs when an interview round is deleted.
+  - **Component Hierarchy by Domain:** Defined the modular component tree across 5 core domains: Layout (`AppLayout`, `Navbar`, `Sidebar`, `MobileNav`), Common Library (`Button`, `Card`, `Modal`, `Badge`, `Input`, `Select`, `EmptyState`, `SkeletonLoader`), Applications (`KanbanBoard`, `KanbanColumn`, `ApplicationCard`, `TableView`, `QuickAddModal`, `ApplicationFilterBar`), Interviews (`InterviewTimeline`, `DebriefModal`, `DebriefStarRating`, `TopicSelector`), and Analytics (`ActionCenterWidget`, `TriageCard`, `PipelineFunnelChart`, `WeaknessHeatmap`, `ResumeCohortTable`, `ThresholdGuardrail`).
+  - **Tactile 3D Physical Component System:** Formulated mechanical 3D button press dynamics (`box-shadow: 0 4px 0 #b45309`, active translate), physical slab cards with 1px top-edge bevel highlights, and layered elevation shadows.
+  - **Anti-Cliché Visual Principles:** Established a bespoke Technical Precision & Basalt Spatial visual language eliminating generic AI SaaS tropes (no purple/blue gradients or glowing blobs; deep obsidian `#0B0F17`, matte carbon `#111622`, 1px borders `#1E293B`, subtle 24px coordinate grid).
+  - **Responsive Breakpoints & Viewport Grid:** Formulated layouts for Desktop (7-column Kanban, 3-row dashboard telemetry), Tablet (collapsible icon rail, dense wrap), and Mobile (bottom navigation bar, touch-friendly swipe feeds).
 
 ---
 
@@ -77,6 +75,9 @@ Progress: [#############····························
 
 | Step | Title | Date |
 |---|---|---|
+| 1.11 | Define component hierarchy, layout structure & design system | 2026-09-26 |
+| 1.10 | Define page inventory and routing structure | 2026-09-26 |
+| 1.9 | Define Analytics API endpoints | 2026-09-26 |
 | 1.8 | Define Interview & Debrief API endpoints | 2026-09-26 |
 | 1.7 | Define Application CRUD API endpoints | 2026-09-26 |
 | 1.6 | Define Auth API endpoints | 2026-09-26 |
@@ -109,9 +110,9 @@ None.
 
 | Step | Title | Phase |
 |---|---|---|
-| 1.8 | Define Interview & Debrief API endpoints | Phase 1: Architecture |
-| 1.9 | Define Analytics API endpoints | Phase 1: Architecture |
-| 1.10 | Define page inventory and routing structure | Phase 1: Architecture |
+| 1.11 | Define component hierarchy and layout structure | Phase 1: Architecture |
+| 1.12 | Define MongoDB aggregation pipelines for analytics | Phase 1: Architecture |
+| 1.13 | Define Action Center triage logic | Phase 1: Architecture |
 
 ---
 
@@ -120,10 +121,11 @@ None.
 | Milestone | Steps Complete | Target | Status |
 |---|---|---|---|
 | 📄 Documentation complete | 11/11 | Phase 0 | ✅ Complete |
-| 📐 Architecture complete | 7/15 | Phase 1 | 🟡 In Progress |
+| 📐 Architecture complete | 10/15 | Phase 1 | 🟡 In Progress |
 | 🔐 Auth working (end-to-end) | 0/36 | Phase 2 | ⬜ |
 | 📋 Pipeline working (Kanban + Table) | 0/31 | Phase 3 | ⬜ |
 | ⏰ Stale + Action Center working | 0/9 | Phase 4 | ⬜ |
 | 🎤 Debrief flow working | 0/19 | Phase 5 | ⬜ |
 | 📊 Analytics charts working | 0/13 | Phase 6 | ⬜ |
 | ✅ MVP complete | 0/13 | Phase 7 | ⬜ |
+
