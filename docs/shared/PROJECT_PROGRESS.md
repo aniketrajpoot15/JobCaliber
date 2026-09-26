@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 22 |
-| **Remaining Steps** | 125 |
-| **Overall Progress** | **15%** |
+| **Completed Steps** | 23 |
+| **Remaining Steps** | 124 |
+| **Overall Progress** | **16%** |
 | **Current Phase** | Phase 1 — Architecture (In Progress) |
-| **Current Step** | Step 1.12 — Define MongoDB aggregation pipelines for analytics |
-| **Current Status** | `READY` (Step 1.11 Complete; Awaiting approval for Step 1.12) |
+| **Current Step** | Step 1.13 — Define Action Center triage logic |
+| **Current Status** | `READY` (Step 1.12 Complete; Awaiting approval for Step 1.13) |
 
 ```
-Progress: [###############·································] 15%
-           22 / 147 steps
+Progress: [################································] 16%
+           23 / 147 steps
 ```
 
 ---
@@ -32,7 +32,7 @@ Progress: [###############···························
 | Phase | Total Steps | Completed | Remaining | Progress | Status |
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
-| Phase 1: Architecture | 15 | 11 | 4 | 73% | 🟡 In Progress |
+| Phase 1: Architecture | 15 | 12 | 3 | 80% | 🟡 In Progress |
 | Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
@@ -44,30 +44,31 @@ Progress: [###############···························
 
 ## Next Step
 
-### Step 1.12 — Define MongoDB aggregation pipelines for analytics
+### Step 1.13 — Define Action Center triage logic
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 1: Architecture |
-| **Objective** | Write the exact aggregation pipeline stages for funnel, weakness heatmap, and resume cohort. |
-| **Why** | Aggregation pipelines are the most complex backend logic — defining them upfront prevents guesswork. |
-| **Files involved** | `docs/Architecture/ANALYTICS_SPEC.md` (created) |
-| **Expected result** | 3 pipeline definitions with $match, $group, $sort stages. Guardrail logic documented. |
-| **Verification** | Funnel counts match the 4 progression stages. Weakness pipeline groups by topicName. |
+| **Objective** | Document the exact algorithm for computing the top 3 action items. |
+| **Why** | The Action Center has 4 trigger types with priority ordering — the logic must be unambiguous. |
+| **Files involved** | `docs/Architecture/ANALYTICS_SPEC.md` (updated — Triage section) |
+| **Expected result** | Priority algorithm: interview in 48h > pending debrief > stale app > recurring topic. |
+| **Verification** | Max 3 items. Dismiss/snooze behavior documented. Edge cases covered. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 1.11 — Define component hierarchy, layout structure & design system
+### Step 1.12 — Define MongoDB aggregation pipelines for analytics
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/Architecture/UI_SPEC.md` (updated — Sections 3 & 4), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/README.md`, Artifact: `design_mockups.md`
+- **Files Created/Modified:** `docs/Architecture/ANALYTICS_SPEC.md` (created), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/README.md`
 - **Key Concepts Specified:**
-  - **Component Hierarchy by Domain:** Defined the modular component tree across 5 core domains: Layout (`AppLayout`, `Navbar`, `Sidebar`, `MobileNav`), Common Library (`Button`, `Card`, `Modal`, `Badge`, `Input`, `Select`, `EmptyState`, `SkeletonLoader`), Applications (`KanbanBoard`, `KanbanColumn`, `ApplicationCard`, `TableView`, `QuickAddModal`, `ApplicationFilterBar`), Interviews (`InterviewTimeline`, `DebriefModal`, `DebriefStarRating`, `TopicSelector`), and Analytics (`ActionCenterWidget`, `TriageCard`, `PipelineFunnelChart`, `WeaknessHeatmap`, `ResumeCohortTable`, `ThresholdGuardrail`).
-  - **Tactile 3D Physical Component System:** Formulated mechanical 3D button press dynamics (`box-shadow: 0 4px 0 #b45309`, active translate), physical slab cards with 1px top-edge bevel highlights, and layered elevation shadows.
-  - **Anti-Cliché Visual Principles:** Established a bespoke Technical Precision & Basalt Spatial visual language eliminating generic AI SaaS tropes (no purple/blue gradients or glowing blobs; deep obsidian `#0B0F17`, matte carbon `#111622`, 1px borders `#1E293B`, subtle 24px coordinate grid).
-  - **Responsive Breakpoints & Viewport Grid:** Formulated layouts for Desktop (7-column Kanban, 3-row dashboard telemetry), Tablet (collapsible icon rail, dense wrap), and Mobile (bottom navigation bar, touch-friendly swipe feeds).
+  - **Funnel Progression Aggregation:** Cumulative funnel calculation logic ensuring applications at late stages (`Offer`) are correctly counted in earlier stages (`Applied`, `OA / Screening`, `Interviewing`). Designed drop-off formula, conversion rate math, and automatic bottleneck identification with non-causal feedback lookup.
+  - **Weakness Heatmap Aggregation:** Single-collection aggregation on `problemlogs` leveraging denormalized `userId` index (`{ userId: 1, topicName: 1 }`) avoiding costly `$lookup` joins. Supports optional category filtering (`Technical`, `Behavioral`, `System Design`, `Custom`).
+  - **Resume Cohort Comparison Aggregation:** Grouping applications by `resumeVersion` and evaluating advancement milestones (`OA / Screening`, `Interviewing`, `Offer`) to derive empirical conversion percentages.
+  - **Sample-Size Guardrails (ADR-005 & ADR-006):** Enforced hard statistical thresholds — masking weakness pattern rankings when debriefs $N < 5$ (`"Complete 5 debriefs to reveal patterns (X/5)"`), and masking resume conversion rates when applications $N < 15$ (`"Gathering Data (X/15)"`).
+  - **Three-Tier Truth Classification & Anti-Causal Rules:** Strict separation between `[FACT]`, `[USER LOG]`, and `[SYSTEM PATTERN]` data, prohibiting causal attribution.
 
 ---
 
@@ -75,9 +76,9 @@ Progress: [###############···························
 
 | Step | Title | Date |
 |---|---|---|
+| 1.12 | Define MongoDB aggregation pipelines for analytics | 2026-09-26 |
 | 1.11 | Define component hierarchy, layout structure & design system | 2026-09-26 |
 | 1.10 | Define page inventory and routing structure | 2026-09-26 |
-| 1.9 | Define Analytics API endpoints | 2026-09-26 |
 | 1.8 | Define Interview & Debrief API endpoints | 2026-09-26 |
 | 1.7 | Define Application CRUD API endpoints | 2026-09-26 |
 | 1.6 | Define Auth API endpoints | 2026-09-26 |

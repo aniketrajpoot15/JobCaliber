@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (11/15 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 in progress (12/15 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -260,7 +260,7 @@
 - **Expected Result:** 3 pipeline definitions with $match, $group, $sort stages. Guardrail logic documented.
 - **Verification:** Funnel counts match the 4 progression stages. Weakness pipeline groups by topicName.
 - **Learn/Review:** MongoDB aggregation framework, $group, $match, $sort, $lookup operators.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 1.13 — Define Action Center triage logic
 - **Objective:** Document the exact algorithm for computing the top 3 action items.
