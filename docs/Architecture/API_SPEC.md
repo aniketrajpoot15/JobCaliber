@@ -24,7 +24,7 @@
 4. [Auth API — `/api/auth`](#4-auth-api--apiauth)
 5. [Applications API — `/api/applications`](#5-applications-api--apiapplications)
 6. [Interviews API — `/api/interviews`](#6-interviews-api--apiinterviews)
-7. Analytics API — `/api/analytics` *(Step 1.9)*
+7. [Analytics API — `/api/analytics`](#7-analytics-api--apianalytics)
 
 ---
 
@@ -2515,5 +2515,665 @@ router.delete('/:id', [
 
 ---
 
-*Section 7 (Analytics API — `/api/analytics`) will be added in Step 1.9.*
+## 7. Analytics API — `/api/analytics`
+
+**Purpose:** Provide aggregated, insight-oriented data for the LEARN and ACT stages of the Core Product Loop. These endpoints perform server-side MongoDB aggregation pipelines and return pre-computed results — the frontend ONLY renders them.  
+**Auth Required:** Yes — every endpoint requires the `auth` middleware (§3.5)  
+**Tenant Isolation:** Every aggregation pipeline begins with `{ $match: { userId: req.user._id } }` — no exceptions  
+**Rate Limited:** No (standard authenticated endpoints)  
+**Requirements Coverage:** FR-10 (Weakness Heatmap), FR-11 (Funnel Conversion), FR-12 (Resume Cohort Tracker), FR-13 (Action Center / Daily Triage)  
+**Performance Target:** All aggregation endpoints must respond within 2 seconds (NFR-02)
+
+---
+
+### 7.1 `GET /api/analytics/funnel`
+
+**Purpose:** Return the application progression funnel — how many applications reached each stage. This powers the Funnel Conversion Analytics chart (FR-11).  
+**Auth Required:** Yes  
+**Requirements:** FR-11.1, FR-11.2, FR-11.3, FR-11.4, FR-11.5
+
+#### Request
+
+```
+GET /api/analytics/funnel
+Cookie: token=<jwt>
+```
+
+**Query Parameters:** None. The funnel always covers all non-archived applications for the user.
+
+#### Success Response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "funnel": [
+      { "stage": "Applied", "count": 45 },
+      { "stage": "OA / Screening", "count": 18 },
+      { "stage": "Interviewing", "count": 8 },
+      { "stage": "Offer", "count": 2 }
+    ],
+    "dropoffs": [
+      { "from": "Applied", "to": "OA / Screening", "dropped": 27, "conversionRate": 40.0 },
+      { "from": "OA / Screening", "to": "Interviewing", "dropped": 10, "conversionRate": 44.4 },
+      { "from": "Interviewing", "to": "Offer", "dropped": 6, "conversionRate": 25.0 }
+    ],
+    "biggestDropoff": {
+      "from": "Applied",
+      "to": "OA / Screening",
+      "dropped": 27,
+      "hint": "Most applications are filtered at the screening stage. Consider tailoring your resume to each role's keywords."
+    },
+    "context": {
+      "totalApplications": 78,
+      "saved": 5,
+      "rejected": 15,
+      "ghosted": 8
+    },
+    "disclaimer": "Based on your self-reported application data",
+    "truthClassification": "FACT"
+  }
+}
+```
+
+**Funnel Stage Definition:**
+
+The funnel counts applications that **reached or passed** each stage, not just applications currently at that stage. An application currently at `Offer` is also counted in `Applied`, `OA / Screening`, and `Interviewing`:
+
+```
+Funnel count logic (per stage):
+  Applied         = count where status IN ('Applied', 'OA / Screening', 'Interviewing', 'Offer')
+  OA / Screening  = count where status IN ('OA / Screening', 'Interviewing', 'Offer')
+  Interviewing    = count where status IN ('Interviewing', 'Offer')
+  Offer           = count where status = 'Offer'
+```
+
+**Why cumulative counts?** If we only counted applications *currently* at each stage, the funnel would appear inverted when many users move past early stages. Cumulative counting shows the true "how many made it this far" progression.
+
+**Excluded statuses (FR-11.5):** `Saved` (not yet in pipeline), `Rejected`, and `Ghosted` are excluded from the funnel bars but reported in `context` for transparency.
+
+**Interpretation hints (FR-11.3):** The `biggestDropoff` object identifies the stage transition with the largest absolute drop and provides a generic, non-causal hint. The hint text is selected from a static lookup table:
+
+| Biggest Dropoff Stage | Hint |
+|---|---|
+| Applied → OA/Screening | "Most applications are filtered at the screening stage. Consider tailoring your resume to each role's keywords." |
+| OA/Screening → Interviewing | "Online assessments are a common filter. Practice timed coding problems to improve throughput." |
+| Interviewing → Offer | "Final-stage conversion is always competitive. Review your debrief patterns for recurring topics." |
+
+#### Error Responses
+
+| Scenario | Status | Response |
+|---|---|---|
+| Not authenticated | `401` | `{ success: false, message: "Not authenticated. Please log in." }` |
+| Server error | `500` | `{ success: false, message: "An unexpected error occurred. Please try again later." }` |
+
+#### Server-Side Logic (Controller Pseudocode)
+
+```
+1. Run aggregation pipeline on Application collection:
+   a. $match: { userId: req.user._id, isArchived: false }
+   b. $group by status, counting documents per status
+2. From the per-status counts, compute cumulative funnel counts:
+   appliedCount = counts['Applied'] + counts['OA / Screening'] + counts['Interviewing'] + counts['Offer']
+   oaCount = counts['OA / Screening'] + counts['Interviewing'] + counts['Offer']
+   interviewingCount = counts['Interviewing'] + counts['Offer']
+   offerCount = counts['Offer']
+3. Compute dropoffs between consecutive funnel stages
+4. Identify biggestDropoff (largest absolute drop)
+5. Attach context counts (saved, rejected, ghosted)
+6. Return 200 with formatted response
+```
+
+---
+
+### 7.2 `GET /api/analytics/weaknesses`
+
+**Purpose:** Return the Weakness Frequency Heatmap — stumbled topics ranked by how often they appeared across debriefs (FR-10). This is the LEARN stage's core insight.  
+**Auth Required:** Yes  
+**Requirements:** FR-10.1, FR-10.2, FR-10.3, FR-10.4, FR-10.5
+
+#### Request
+
+```
+GET /api/analytics/weaknesses?category=all
+Cookie: token=<jwt>
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Validation | Description |
+|---|---|---|---|---|---|
+| `category` | `String` | No | `'all'` | Must be one of: `'all'`, `'Technical'`, `'Behavioral'`, `'System Design'`, `'Custom'` | Filter weakness data by problem log category |
+
+#### Success Response — Heatmap Unlocked (N ≥ 5 debriefs)
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "guardrail": {
+      "totalCompletedDebriefs": 8,
+      "minimumRequired": 5,
+      "isUnlocked": true
+    },
+    "weaknesses": [
+      {
+        "topicName": "Dynamic Programming",
+        "category": "Technical",
+        "count": 5,
+        "percentage": 62.5,
+        "debriefIds": ["id1", "id2", "id3", "id4", "id5"]
+      },
+      {
+        "topicName": "Graphs",
+        "category": "Technical",
+        "count": 4,
+        "percentage": 50.0,
+        "debriefIds": ["id1", "id3", "id5", "id7"]
+      },
+      {
+        "topicName": "STAR Method",
+        "category": "Behavioral",
+        "count": 3,
+        "percentage": 37.5,
+        "debriefIds": ["id2", "id6", "id8"]
+      }
+    ],
+    "totalTopicsLogged": 12,
+    "filter": "all",
+    "truthClassification": "USER_LOG",
+    "disclaimer": "Based on topics you self-reported as areas of difficulty"
+  }
+}
+```
+
+**`percentage` calculation:** `(count / totalCompletedDebriefs) * 100` — what proportion of debriefs included this stumble topic.
+
+**`debriefIds`:** Array of the `InterviewRound._id`s where this topic was logged. Enables the frontend to link directly to specific debrief details.
+
+**`truthClassification: USER_LOG`:** Per §10 of AGENTS.md — these are self-reported stumble topics, NOT system-measured weaknesses. The UI must NEVER say "Your weakness is Dynamic Programming." It must say "Dynamic Programming was recorded as a difficulty area in 5 of your debriefs."
+
+#### Success Response — Heatmap Locked (N < 5 debriefs)
+
+```json
+{
+  "success": true,
+  "data": {
+    "guardrail": {
+      "totalCompletedDebriefs": 3,
+      "minimumRequired": 5,
+      "isUnlocked": false
+    },
+    "weaknesses": [],
+    "totalTopicsLogged": 0,
+    "filter": "all",
+    "truthClassification": "USER_LOG",
+    "disclaimer": "Complete 5 debriefs to reveal patterns (3/5)"
+  }
+}
+```
+
+**Why return empty `weaknesses` instead of the partial data?** ADR-005 establishes that patterns from fewer than 5 debriefs are statistically unreliable. Showing partial data would invite premature conclusions. The guardrail object provides the progress motivator instead.
+
+#### Success Response — Unlocked but No Topics Logged (FR-10.4)
+
+```json
+{
+  "success": true,
+  "data": {
+    "guardrail": {
+      "totalCompletedDebriefs": 6,
+      "minimumRequired": 5,
+      "isUnlocked": true
+    },
+    "weaknesses": [],
+    "totalTopicsLogged": 0,
+    "filter": "all",
+    "truthClassification": "USER_LOG",
+    "disclaimer": "No stumbled topics logged yet. Use the debrief to tag areas of difficulty."
+  }
+}
+```
+
+#### Error Responses
+
+| Scenario | Status | Response |
+|---|---|---|
+| Invalid category filter | `400` | `{ success: false, message: "Validation failed", errors: [{ field: "category", message: "'DSA' is not a valid category. Use 'all', 'Technical', 'Behavioral', 'System Design', or 'Custom'" }] }` |
+| Not authenticated | `401` | `{ success: false, message: "Not authenticated. Please log in." }` |
+| Server error | `500` | `{ success: false, message: "An unexpected error occurred. Please try again later." }` |
+
+#### Server-Side Logic (Controller Pseudocode)
+
+```
+1. Count completed debriefs:
+   totalDebriefs = InterviewRound.countDocuments({ userId: req.user._id, debriefCompleted: true })
+2. Check guardrail:
+   if (totalDebriefs < 5) → return locked response with progress
+3. Build aggregation pipeline on ProblemLog collection:
+   a. $match: { userId: req.user._id }
+   b. If category !== 'all': add { category: categoryFilter } to $match
+   c. $group: { _id: "$topicName", category: { $first: "$category" }, count: { $sum: 1 }, debriefIds: { $addToSet: "$roundId" } }
+   d. $sort: { count: -1, _id: 1 }  (highest frequency first, alphabetical tiebreak)
+4. For each result, compute percentage: (count / totalDebriefs) * 100
+5. Count total unique topics: totalTopicsLogged = results.length
+6. Return 200 with formatted response
+```
+
+---
+
+### 7.3 `GET /api/analytics/resume-cohorts`
+
+**Purpose:** Compare callback rates across different resume versions (FR-12). Each resume version tag becomes a "cohort" with its own application count and callback rate.  
+**Auth Required:** Yes  
+**Requirements:** FR-12.1, FR-12.2, FR-12.3, FR-12.4, FR-12.5
+
+#### Request
+
+```
+GET /api/analytics/resume-cohorts
+Cookie: token=<jwt>
+```
+
+**Query Parameters:** None.
+
+#### Success Response — Multiple Cohorts
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "cohorts": [
+      {
+        "resumeVersionTag": "Backend_v2",
+        "totalApplications": 22,
+        "callbacks": 6,
+        "callbackRate": 27.3,
+        "guardrail": {
+          "minimumRequired": 15,
+          "isUnlocked": true
+        }
+      },
+      {
+        "resumeVersionTag": "Backend_v1",
+        "totalApplications": 35,
+        "callbacks": 5,
+        "callbackRate": 14.3,
+        "guardrail": {
+          "minimumRequired": 15,
+          "isUnlocked": true
+        }
+      },
+      {
+        "resumeVersionTag": "Frontend_v1",
+        "totalApplications": 8,
+        "callbacks": null,
+        "callbackRate": null,
+        "guardrail": {
+          "minimumRequired": 15,
+          "isUnlocked": false
+        }
+      }
+    ],
+    "untagged": {
+      "totalApplications": 13,
+      "callbacks": 3,
+      "callbackRate": null,
+      "note": "13 applications have no resume version tag"
+    },
+    "truthClassification": "SYSTEM_PATTERN",
+    "disclaimer": "Callback rates are based on your recorded application data and do not prove one resume is better than another"
+  }
+}
+```
+
+**Callback definition:** An application is a "callback" if its current status is `'OA / Screening'`, `'Interviewing'`, or `'Offer'` — meaning it progressed beyond the `Applied` stage.
+
+**Per-cohort guardrail (ADR-006):** Each cohort independently checks N ≥ 15. Cohorts below threshold show `callbackRate: null` (the frontend renders "Gathering Data (X/15)" instead of a percentage). This prevents a user with 3 applications on "Resume_v3" from concluding "100% callback rate!"
+
+**Untagged cohort (FR-12.4):** Applications without a `resumeVersionTag` are grouped as `untagged`. Their callback rate is always `null` (not meaningful to compare) — but the count is shown so the user knows how many apps are untagged and can go back to tag them.
+
+#### Success Response — No Resume Tags Used (FR-12.5)
+
+```json
+{
+  "success": true,
+  "data": {
+    "cohorts": [],
+    "untagged": {
+      "totalApplications": 45,
+      "callbacks": 12,
+      "callbackRate": null,
+      "note": "45 applications have no resume version tag"
+    },
+    "truthClassification": "SYSTEM_PATTERN",
+    "disclaimer": "Tag applications with resume versions to compare callback rates"
+  }
+}
+```
+
+#### Error Responses
+
+| Scenario | Status | Response |
+|---|---|---|
+| Not authenticated | `401` | `{ success: false, message: "Not authenticated. Please log in." }` |
+| Server error | `500` | `{ success: false, message: "An unexpected error occurred. Please try again later." }` |
+
+#### Server-Side Logic (Controller Pseudocode)
+
+```
+1. Run aggregation pipeline on Application collection:
+   a. $match: { userId: req.user._id, isArchived: false }
+   b. $group: {
+        _id: "$resumeVersionTag",
+        totalApplications: { $sum: 1 },
+        callbacks: {
+          $sum: {
+            $cond: [
+              { $in: ["$status", ['OA / Screening', 'Interviewing', 'Offer']] },
+              1,
+              0
+            ]
+          }
+        }
+      }
+   c. $sort: { totalApplications: -1 }
+2. Separate results into tagged cohorts and untagged:
+   untagged = result where _id is '' or null
+   cohorts = remaining results
+3. For each cohort:
+   if totalApplications >= 15:
+     callbackRate = round((callbacks / totalApplications) * 100, 1)
+     isUnlocked = true
+   else:
+     callbackRate = null
+     isUnlocked = false
+4. For untagged: always callbackRate = null
+5. Return 200 with formatted response
+```
+
+---
+
+### 7.4 `GET /api/analytics/triage`
+
+**Purpose:** Return the top 3 priority action items for the user's Action Center (FR-13). This is the ACT stage — translating data patterns into immediate, specific actions.  
+**Auth Required:** Yes  
+**Requirements:** FR-13.1, FR-13.2, FR-13.3, FR-13.4, FR-13.5, FR-13.6, FR-13.7
+
+#### Request
+
+```
+GET /api/analytics/triage
+Cookie: token=<jwt>
+```
+
+**Query Parameters:** None. Triage is always computed fresh from current data.
+
+#### Success Response — Items Present
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "triage-upcoming-60f7b2a1e13e8c001f8e4b31",
+        "type": "UPCOMING_INTERVIEW",
+        "priority": 1,
+        "icon": "🔴",
+        "title": "Interview at Google in 12 hours",
+        "subtitle": "Technical Round 2 — Sep 28, 2:00 PM",
+        "actionLabel": "View Details",
+        "actionLink": "/applications/60f7b2a1e13e8c001f8e4b2a",
+        "referenceId": "60f7b2a1e13e8c001f8e4b31",
+        "referenceType": "interviewRound",
+        "meta": {
+          "hoursUntilInterview": 12,
+          "companyName": "Google",
+          "roleTitle": "SWE Intern",
+          "roundType": "Technical"
+        }
+      },
+      {
+        "id": "triage-debrief-60f7b2a1e13e8c001f8e4b32",
+        "type": "PENDING_DEBRIEF",
+        "priority": 2,
+        "icon": "🟡",
+        "title": "Debrief pending for Amazon Screening",
+        "subtitle": "Interview was 36 hours ago — memories fade fast!",
+        "actionLabel": "Start Debrief",
+        "actionLink": "/applications/60f7b2a1e13e8c001f8e4b2b",
+        "referenceId": "60f7b2a1e13e8c001f8e4b32",
+        "referenceType": "interviewRound",
+        "meta": {
+          "hoursSinceInterview": 36,
+          "companyName": "Amazon",
+          "roleTitle": "SDE-1",
+          "roundType": "Screening"
+        }
+      },
+      {
+        "id": "triage-stale-60f7b2a1e13e8c001f8e4b2c",
+        "type": "STALE_APPLICATION",
+        "priority": 3,
+        "icon": "🔵",
+        "title": "No update from Microsoft in 18 days",
+        "subtitle": "Applied for PM Intern on Sep 8 — follow up or archive?",
+        "actionLabel": "View Application",
+        "actionLink": "/applications/60f7b2a1e13e8c001f8e4b2c",
+        "referenceId": "60f7b2a1e13e8c001f8e4b2c",
+        "referenceType": "application",
+        "meta": {
+          "daysSinceLastUpdate": 18,
+          "companyName": "Microsoft",
+          "roleTitle": "PM Intern",
+          "currentStatus": "Applied"
+        }
+      }
+    ],
+    "totalCandidates": 7,
+    "maxItems": 3,
+    "isEmpty": false
+  }
+}
+```
+
+#### Success Response — All Clear (FR-13.7)
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [],
+    "totalCandidates": 0,
+    "maxItems": 3,
+    "isEmpty": true
+  }
+}
+```
+
+The frontend renders: *"You're all caught up! 🎉"*
+
+#### Priority Ranking Algorithm
+
+The triage engine evaluates 4 trigger types in strict priority order. Within each type, items are sorted by urgency (nearest first). The top 3 items across all types are returned:
+
+```
+PRIORITY 1 (🔴) — UPCOMING_INTERVIEW
+  Trigger: InterviewRound where:
+    - scheduledDate is within the next 48 hours
+    - scheduledDate is in the future (not past)
+    - debriefCompleted === false
+  Sort: Nearest scheduledDate first
+  Title format: "Interview at {company} in {hours} hours"
+
+PRIORITY 2 (🟡) — PENDING_DEBRIEF
+  Trigger: InterviewRound where:
+    - scheduledDate is in the past
+    - debriefCompleted === false
+    - (now - scheduledDate) > 24 hours
+  Sort: Oldest unfinished debrief first (most overdue)
+  Title format: "Debrief pending for {company} {roundType}"
+
+PRIORITY 3 (🔵) — STALE_APPLICATION
+  Trigger: Application where:
+    - isStale === true
+    - isArchived === false
+    - status IN ('Applied', 'OA / Screening')
+  Sort: Oldest lastStatusUpdate first (most stale)
+  Title format: "No update from {company} in {days} days"
+
+PRIORITY 4 (🟣) — RECURRING_TOPIC
+  Trigger: ProblemLog aggregation where:
+    - Topic appears in ≥ 3 debriefs
+    - Only if total debriefs ≥ 5 (weakness heatmap guardrail)
+  Sort: Highest frequency first
+  Title format: "{topic} recorded in {count} debriefs"
+  Note: This is a "Should" priority (FR-13.5), lower urgency
+```
+
+**Maximum 3 items (PD-07):** If 2 items are Priority 1 (upcoming interviews) and 4 items are Priority 2 (pending debriefs), the response contains the 2 P1 items + the 1 most urgent P2 item. Lower priorities are displaced.
+
+**`totalCandidates`:** The total number of items across all priority tiers BEFORE the top-3 cap. This helps the frontend show "3 of 7 action items" if desired.
+
+#### Dismiss / Snooze Behavior (FR-13.6)
+
+Dismiss and snooze are NOT managed by this endpoint. They are frontend-local behaviors stored in localStorage:
+- **Dismiss:** Frontend stores `{ itemId, dismissedAt }` in localStorage. Dismissed items are filtered out client-side.
+- **Snooze (7 days):** Frontend stores `{ itemId, snoozedUntil }` in localStorage. Snoozed items are filtered out until `snoozedUntil` passes.
+
+**Why client-side?** Action Center items are ephemeral — they change every time data updates. Storing dismiss/snooze state server-side would create a "dismissed items" collection that needs cleanup logic, cross-references, and orphan detection. localStorage is simpler and sufficient for MVP.
+
+#### Error Responses
+
+| Scenario | Status | Response |
+|---|---|---|
+| Not authenticated | `401` | `{ success: false, message: "Not authenticated. Please log in." }` |
+| Server error | `500` | `{ success: false, message: "An unexpected error occurred. Please try again later." }` |
+
+#### Server-Side Logic (Controller Pseudocode)
+
+```
+1. Initialize candidates = []
+
+2. PRIORITY 1 — Upcoming Interviews:
+   now = new Date()
+   fortyEightHoursFromNow = new Date(now.getTime() + 48 * 60 * 60 * 1000)
+   upcomingRounds = InterviewRound.find({
+     userId: req.user._id,
+     scheduledDate: { $gt: now, $lte: fortyEightHoursFromNow },
+     debriefCompleted: false
+   }).sort({ scheduledDate: 1 }).populate('applicationId', 'companyName roleTitle')
+   For each round:
+     candidates.push({ type: 'UPCOMING_INTERVIEW', priority: 1, ... })
+
+3. PRIORITY 2 — Pending Debriefs:
+   twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+   pendingDebriefs = InterviewRound.find({
+     userId: req.user._id,
+     scheduledDate: { $lt: twentyFourHoursAgo },
+     debriefCompleted: false
+   }).sort({ scheduledDate: 1 }).populate('applicationId', 'companyName roleTitle')
+   For each round:
+     candidates.push({ type: 'PENDING_DEBRIEF', priority: 2, ... })
+
+4. PRIORITY 3 — Stale Applications:
+   staleApps = Application.find({
+     userId: req.user._id,
+     isStale: true,
+     isArchived: false,
+     status: { $in: ['Applied', 'OA / Screening'] }
+   }).sort({ lastStatusUpdate: 1 })
+   For each app:
+     candidates.push({ type: 'STALE_APPLICATION', priority: 3, ... })
+
+5. PRIORITY 4 — Recurring Topics (only if debriefs ≥ 5):
+   totalDebriefs = InterviewRound.countDocuments({ userId: req.user._id, debriefCompleted: true })
+   if (totalDebriefs >= 5):
+     recurringTopics = ProblemLog.aggregate([
+       { $match: { userId: req.user._id } },
+       { $group: { _id: '$topicName', count: { $sum: 1 } } },
+       { $match: { count: { $gte: 3 } } },
+       { $sort: { count: -1 } }
+     ])
+     For each topic:
+       candidates.push({ type: 'RECURRING_TOPIC', priority: 4, ... })
+
+6. Sort all candidates by priority ASC, then by urgency within same priority
+7. Slice to top 3: items = candidates.slice(0, 3)
+8. Return 200 with items, totalCandidates: candidates.length, isEmpty: items.length === 0
+```
+
+---
+
+### 7.5 Analytics API Summary Table
+
+| # | Method | Path | Auth | Purpose | FR | Guardrail |
+|---|---|---|---|---|---|---|
+| 7.1 | `GET` | `/api/analytics/funnel` | Yes | Application progression funnel (cumulative counts + dropoffs) | FR-11 | None |
+| 7.2 | `GET` | `/api/analytics/weaknesses` | Yes | Weakness frequency heatmap (topic ranking by debrief count) | FR-10 | N ≥ 5 debriefs (ADR-005) |
+| 7.3 | `GET` | `/api/analytics/resume-cohorts` | Yes | Resume version callback rate comparison | FR-12 | N ≥ 15 per cohort (ADR-006) |
+| 7.4 | `GET` | `/api/analytics/triage` | Yes | Top 3 action items (upcoming → debrief → stale → recurring) | FR-13 | P4 requires N ≥ 5 debriefs |
+
+---
+
+### 7.6 Analytics Route File Structure (Phase 2 Reference)
+
+```
+server/
+├── routes/
+│   └── analyticsRoutes.js       ← Route definitions + validation chains
+├── controllers/
+│   └── analyticsController.js   ← 4 handler functions
+└── utils/
+    ├── funnelHints.js            ← Static lookup table for interpretation hints
+    └── staleEngine.js            ← Shared isStale calculation (reused from §5)
+```
+
+**Express-Validator Chain Location:** Validation chains live in the route file:
+
+```javascript
+// Pattern for analyticsRoutes.js (Phase 2)
+const { query } = require('express-validator');
+const {
+  getFunnel,
+  getWeaknesses,
+  getResumeCohorts,
+  getTriage
+} = require('../controllers/analyticsController');
+const { auth } = require('../middleware/auth');
+
+router.use(auth);
+
+router.get('/funnel', getFunnel);
+
+router.get('/weaknesses', [
+  query('category').optional().isIn(['all', 'Technical', 'Behavioral', 'System Design', 'Custom'])
+    .withMessage('Invalid category filter')
+], getWeaknesses);
+
+router.get('/resume-cohorts', getResumeCohorts);
+
+router.get('/triage', getTriage);
+```
 

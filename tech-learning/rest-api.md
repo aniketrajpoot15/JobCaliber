@@ -62,7 +62,7 @@ Every user action in the browser → HTTP request to the API → JSON response b
 | `/api/auth` | Registration, login, logout, session check | Step 1.6 (✅ Done) |
 | `/api/applications` | CRUD operations on job applications | Step 1.7 (✅ Done) |
 | `/api/interviews` | Interview rounds and debriefs | Step 1.8 (✅ Done) |
-| `/api/analytics` | Aggregated stats and insights | Step 1.9 |
+| `/api/analytics` | Aggregated stats and insights | Step 1.9 (✅ Done) |
 
 ---
 
@@ -442,6 +442,52 @@ When revising a debrief (`PUT /api/interviews/:id/debrief`):
 - Instead of diffing which questions were added, changed, or removed, the controller deletes the existing questions/problem logs for that round and inserts the new array.
 - This is much simpler, deterministic, and avoids race conditions when questions are re-ordered or deleted.
 
+### 6.15 Aggregation-Oriented API Design (Step 1.9)
+
+Analytics endpoints are fundamentally different from CRUD endpoints:
+- **CRUD endpoints:** Read/write individual documents. Map cleanly to HTTP methods.
+- **Analytics endpoints:** Run MongoDB aggregation pipelines across entire collections and return computed results.
+
+All 4 analytics endpoints are `GET` requests with no request body — they produce read-only, computed views of the user's data. The server does ALL the computation; the frontend only renders the result.
+
+### 6.16 Guardrail-Protected Responses (Step 1.9)
+
+Some analytics features are harmful when based on too little data. The API enforces guardrails:
+
+| Feature | Guardrail | Below Threshold |
+|---|---|---|
+| Weakness Heatmap | N ≥ 5 debriefs | Returns empty `weaknesses[]` + progress indicator |
+| Resume Cohort Rate | N ≥ 15 per cohort | Returns `callbackRate: null` per cohort |
+| Recurring Topic Nudge | N ≥ 5 debriefs + topic ≥ 3 | Omitted from triage results |
+
+The guardrail is enforced **server-side** — the backend NEVER sends unreliable data, even if the frontend requests it. The response includes guardrail metadata so the frontend can show encouraging progress messages instead of empty charts.
+
+### 6.17 Truth Classification in Responses (Step 1.9)
+
+Every analytics response includes a `truthClassification` field from the Three-Tier system:
+
+| Classification | Meaning | Example |
+|---|---|---|
+| `FACT` | What the user explicitly recorded | "14 applications submitted" |
+| `USER_LOG` | What the user self-reported | "Stumbled on Graphs in 3 rounds" |
+| `SYSTEM_PATTERN` | What the system computed from data | "Backend_v2 has higher callback rate" |
+
+This prevents the frontend from accidentally presenting user self-reports as system-proven facts.
+
+### 6.18 Cumulative Funnel Counting (Step 1.9)
+
+The funnel chart counts applications that **reached or passed** each stage, not just those currently AT a stage:
+
+```
+Application currently at "Offer":
+  → Counted in: Applied ✓, OA/Screening ✓, Interviewing ✓, Offer ✓
+
+Application currently at "Applied":
+  → Counted in: Applied ✓ only
+```
+
+This creates a proper decreasing funnel shape. Non-cumulative counting would produce misleading results where later stages sometimes have higher counts than earlier ones.
+
 ---
 
 ## 7. Project-Specific Implementation
@@ -519,6 +565,22 @@ Instead, `GET /api/auth/me` always fetches fresh data from the database.
 - **Debrief is transactional:** Modifies `interviewrounds`, `interviewquestions`, and `problemlogs` in a single MongoDB transaction.
 - **Auto status transition:** Scheduling a round automatically moves the application to `'Interviewing'` and resets the stale timer.
 - **Embedded guardrail metrics:** Debrief submission returns the current count toward the N ≥ 5 heatmap unlock threshold.
+
+### 7.6 Our 4 Analytics Endpoints (Step 1.9)
+
+| Method | Path | Purpose | Guardrail |
+|---|---|---|---|
+| `GET` | `/api/analytics/funnel` | Application progression funnel (cumulative counts + dropoffs + interpretation hints) | None |
+| `GET` | `/api/analytics/weaknesses` | Weakness heatmap (stumbled topics ranked by frequency across debriefs) | N ≥ 5 debriefs |
+| `GET` | `/api/analytics/resume-cohorts` | Resume version callback rate comparison table | N ≥ 15 per cohort |
+| `GET` | `/api/analytics/triage` | Top 3 priority action items for Action Center | P4 requires N ≥ 5 debriefs |
+
+**Key design decisions:**
+- **All computation is server-side:** The frontend never runs aggregation logic — it only renders pre-computed results.
+- **Guardrails enforced server-side:** The backend returns empty data + progress metadata when sample sizes are insufficient, rather than trusting the frontend to hide unreliable data.
+- **Truth classification on every response:** Prevents the UI from accidentally presenting self-reports as system-proven facts.
+- **Cumulative funnel counting:** Applications that passed a stage are counted in all stages up to that point, creating a proper decreasing funnel.
+- **Triage dismiss/snooze is client-side:** Action items are ephemeral; localStorage is sufficient for MVP dismiss/snooze state.
 
 ---
 
