@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 24 |
-| **Remaining Steps** | 123 |
-| **Overall Progress** | **16%** |
+| **Completed Steps** | 25 |
+| **Remaining Steps** | 122 |
+| **Overall Progress** | **17%** |
 | **Current Phase** | Phase 1 — Architecture (In Progress) |
-| **Current Step** | Step 1.14 — Define security architecture |
-| **Current Status** | `READY` (Step 1.13 Complete; Awaiting approval for Step 1.14) |
+| **Current Step** | Step 1.15 — Architecture review & approval |
+| **Current Status** | `READY` (Step 1.14 Complete; Awaiting approval for Step 1.15) |
 
 ```
-Progress: [################································] 16%
-           24 / 147 steps
+Progress: [#################·······························] 17%
+           25 / 147 steps
 ```
 
 ---
@@ -32,7 +32,7 @@ Progress: [################··························�
 | Phase | Total Steps | Completed | Remaining | Progress | Status |
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
-| Phase 1: Architecture | 15 | 13 | 2 | 87% | 🟡 In Progress |
+| Phase 1: Architecture | 15 | 14 | 1 | 93% | 🟡 In Progress |
 | Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
@@ -44,30 +44,30 @@ Progress: [################··························�
 
 ## Next Step
 
-### Step 1.14 — Define security architecture
+### Step 1.15 — Architecture review & approval
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 1: Architecture |
-| **Objective** | Document the middleware chain, validation rules, and rate limit configuration. |
-| **Why** | Security is non-negotiable. Every middleware, its order, and its purpose must be documented. |
-| **Files involved** | `docs/Architecture/SECURITY.md` (created) |
-| **Expected result** | Middleware chain order, rate limit config, NoSQL sanitization config, tenant isolation pattern. |
-| **Verification** | Every API endpoint has documented auth requirement and validation rules. |
+| **Objective** | Developer reviews all 5 architecture documents before implementation begins. |
+| **Why** | Architecture errors found during implementation are 10x more expensive to fix. |
+| **Files involved** | Review: `docs/Architecture/DATABASE_SCHEMA.md`, `docs/Architecture/API_SPEC.md`, `docs/Architecture/UI_SPEC.md`, `docs/Architecture/ANALYTICS_SPEC.md`, `docs/Architecture/SECURITY.md` |
+| **Expected result** | Developer approves all architecture documents. |
+| **Verification** | Explicit "approved" from developer for each document. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 1.13 — Define Action Center triage logic
+### Step 1.14 — Define security architecture
 - **Date Completed:** 2026-09-26
-- **Files Created/Modified:** `docs/Architecture/ANALYTICS_SPEC.md` (updated — Section 9), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/README.md`
+- **Files Created/Modified:** `docs/Architecture/SECURITY.md` (created), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/README.md`
 - **Key Concepts Specified:**
-  - **The ACT Stage of the Loop:** Designed the Action Center triage engine capping items at strictly 3 cards (PD-07) to eliminate decision paralysis and alert fatigue, with a clean all-clear zero state (*"You're all caught up! 🎉"*).
-  - **4-Tier Priority Displacement:** Formulated the evaluation algorithm: Priority 1 `UPCOMING_INTERVIEW` (within 48h) > Priority 2 `PENDING_DEBRIEF` (> 2h ago, within 14d) > Priority 3 `STALE_APPLICATION` (> user stale threshold) > Priority 4 `RECURRING_TOPIC` (tagged $\ge 3$ times, $N \ge 5$ debriefs). Higher-urgency cards strictly starve lower tiers.
-  - **Client-Side Dismiss & Snooze (localStorage):** Designed stateless client-side dismissal and 7-day snooze mechanisms, keeping the server database completely clean of temporary notification records.
-  - **Edge-Case Resilience:** Addressed in-progress interviews (2-hour buffer), abandoned rounds (14-day cutoff), orphaned application records, and personal threshold changes.
+  - **10-Stage Express Middleware Pipeline:** Engineered exact ordering: CORS $\rightarrow$ Helmet headers $\rightarrow$ Body parser ($10\text{kb}$ limit) $\rightarrow$ Cookie parser $\rightarrow$ NoSQL sanitizer (`express-mongo-sanitize`) $\rightarrow$ Rate limiter (`authLimiter`) $\rightarrow$ Auth guard (`auth`) $\rightarrow$ Validator (`express-validator`) $\rightarrow$ Controller handler $\rightarrow$ Centralized error handler.
+  - **HttpOnly Cookie Transport (ADR-007):** Documented vulnerability of `localStorage` to XSS token theft versus the immunity of `HttpOnly` cookies, with `SameSite=Lax` CSRF mitigation and payload minimalism (`{ id: user._id }`).
+  - **Universal Tenant Isolation Pattern:** Defined the golden rule ensuring every MongoDB query filters on `{ userId: req.user._id }`, preventing Insecure Direct Object References (IDOR), and verified parent-child referential ownership checks.
+  - **Defense-in-Depth & OWASP Top 10 Matrix:** Mapped all 10 OWASP categories to concrete code implementations (bcrypt work factor 12, rate limiters, NoSQL sanitization, error normalization, and information leakage prevention).
 
 ---
 
@@ -75,6 +75,7 @@ Progress: [################··························�
 
 | Step | Title | Date |
 |---|---|---|
+| 1.14 | Define security architecture | 2026-09-26 |
 | 1.13 | Define Action Center triage logic | 2026-09-26 |
 | 1.12 | Define MongoDB aggregation pipelines for analytics | 2026-09-26 |
 | 1.11 | Define component hierarchy, layout structure & design system | 2026-09-26 |
