@@ -71,10 +71,11 @@ CAPTURE (< 15s) → TRACK (pipeline) → DEBRIEF (90s) → LEARN (patterns) → 
 | **Drag & Drop** | @hello-pangea/dnd | Maintained fork of react-beautiful-dnd (ADR-009) |
 | **Backend** | Node.js + Express.js | Non-blocking I/O, native JS end-to-end |
 | **Database** | MongoDB + Mongoose | Document model fits nested data |
-| **Auth** | JWT + bcryptjs | HttpOnly cookie transport (ADR-007) |
+| **Backend Middleware** | cors, cookie-parser | Cross-origin resource sharing, cookie extraction for JWT transport |
+| **Auth** | jsonwebtoken + bcryptjs | HttpOnly cookie transport (ADR-007), password hashing |
 | **Date Utils** | date-fns | Lightweight, modular, immutable |
 | **Validation** | express-validator | Server-side input validation |
-| **Security** | express-mongo-sanitize, express-rate-limit | Injection defense, brute-force prevention |
+| **Security** | express-mongo-sanitize, express-rate-limit, helmet | Injection defense, brute-force rate limiting, HTTP security headers |
 
 **Every dependency must have a documented reason.** No "nice-to-have" packages.
 
@@ -392,7 +393,7 @@ The AI coding agent must NEVER:
 
 ```
 Phase 0: Research & Documentation  ──► ✅ COMPLETE (Steps 0.1–0.11)
-Phase 1: Architecture              ──► 🟡 IN PROGRESS (Steps 1.1–1.14 complete; Step 1.15 review)
+Phase 1: Architecture              ──► ✅ COMPLETE (Steps 1.1–1.15)
 Phase 2: Foundation                ──► ⬜ NEXT (Project scaffolding, DB connection, Auth)
 Phase 3: Core Data                 ──► ⬜ (Application model, Quick-Add, Pipeline views)
 Phase 4: Pipeline Engine           ──► ⬜ (Status updates, Stale engine, Action Center)

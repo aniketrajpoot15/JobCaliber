@@ -609,7 +609,116 @@ useEffect(() => {
 
 ---
 
-### 4.5 Auth API Summary Table
+### 4.5 Update Current User — `PATCH /api/auth/me`
+
+Updates the authenticated user's profile information, preferences (such as `staleThresholdDays`), and optionally changes their password.
+
+- **Method:** `PATCH`
+- **Path:** `/api/auth/me`
+- **Authentication Required:** Yes (`auth` middleware)
+- **Rate Limited:** No
+- **Associated Requirements:** FR-01.7, FR-04.5, PD-03
+
+#### Request Headers
+
+| Header | Value | Required | Description |
+|---|---|---|---|
+| `Content-Type` | `application/json` | Yes | Request payload format |
+
+#### Request Body Schema
+
+```json
+{
+  "fullName": "Jane Doe",
+  "staleThresholdDays": 21,
+  "currentPassword": "OldPassword123!",
+  "newPassword": "NewSecurePassword456@"
+}
+```
+
+| Field | Type | Required | Constraints | Sanitization |
+|---|---|---|---|---|
+| `fullName` | `String` | No | Length 2–100 chars | `trim()`, `escape()` |
+| `staleThresholdDays` | `Number` | No | Integer between 7 and 45 inclusive | `toInt()` |
+| `currentPassword` | `String` | Conditionally required | Required only if `newPassword` is supplied | None (preserves special chars) |
+| `newPassword` | `String` | No | Min 8, max 128 chars; at least 1 uppercase, 1 lowercase, 1 number, 1 special character | None |
+
+#### Validation Rules (`express-validator`)
+
+```javascript
+[
+  body('fullName')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Full name must be between 2 and 100 characters.'),
+
+  body('staleThresholdDays')
+    .optional()
+    .isInt({ min: 7, max: 45 })
+    .withMessage('Stale threshold must be an integer between 7 and 45 days.'),
+
+  body('newPassword')
+    .optional()
+    .isLength({ min: 8, max: 128 })
+    .withMessage('New password must be between 8 and 128 characters.')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+=\-[\]{}|;:,.<>~`])/)
+    .withMessage('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.'),
+
+  body('currentPassword')
+    .if(body('newPassword').exists({ checkFalsy: true }))
+    .notEmpty()
+    .withMessage('Current password is required to set a new password.')
+]
+```
+
+#### Success Response (`200 OK`)
+
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully.",
+  "data": {
+    "user": {
+      "_id": "60f7b2a1e13e8c001f8e4b2a",
+      "fullName": "Jane Doe",
+      "email": "jane@example.com",
+      "staleThresholdDays": 21,
+      "createdAt": "2026-09-20T10:00:00.000Z",
+      "updatedAt": "2026-09-27T10:00:00.000Z"
+    }
+  }
+}
+```
+
+#### Error Responses
+
+| Scenario | Status | Response |
+|---|---|---|
+| Validation failure (e.g. invalid threshold) | `400` | `{ success: false, message: "Validation failed.", errors: [{ field: "staleThresholdDays", message: "Stale threshold must be an integer between 7 and 45 days." }] }` |
+| Incorrect current password | `400` | `{ success: false, message: "Current password does not match." }` |
+| No authenticated session | `401` | `{ success: false, message: "Not authenticated. Please log in." }` |
+| Server error | `500` | `{ success: false, message: "An unexpected error occurred. Please try again later." }` |
+
+#### Server-Side Logic (Controller Pseudocode)
+
+```
+1. Run express-validator check; return 400 if validation fails.
+2. Fetch user document from DB by req.user._id (with passwordHash explicitly selected).
+3. If newPassword is provided:
+   a. Compare currentPassword with user.passwordHash using bcrypt.compare().
+   b. If no match → return 400 { success: false, message: "Current password does not match." }
+   c. Hash newPassword using bcrypt.hash(newPassword, 12).
+   d. Set user.passwordHash = newHash.
+4. If fullName is provided: set user.fullName = req.body.fullName.
+5. If staleThresholdDays is provided: set user.staleThresholdDays = req.body.staleThresholdDays.
+6. Await user.save().
+7. Return 200 with updated user data (passwordHash stripped by userSchema.toJSON).
+```
+
+---
+
+### 4.6 Auth API Summary Table
 
 | # | Method | Path | Auth | Rate Limited | Purpose | FR |
 |---|---|---|---|---|---|---|
@@ -617,10 +726,11 @@ useEffect(() => {
 | 4.2 | `POST` | `/api/auth/login` | No | Yes (10/15min) | Authenticate + issue cookie | FR-01.3, FR-01.4, FR-01.5 |
 | 4.3 | `POST` | `/api/auth/logout` | No | Yes (10/15min) | Clear cookie | FR-01.6 |
 | 4.4 | `GET` | `/api/auth/me` | Yes | No | Get current user | FR-01.7 |
+| 4.5 | `PATCH` | `/api/auth/me` | Yes | No | Update profile & settings | FR-01.7, FR-04.5 |
 
 ---
 
-### 4.6 Auth Route File Structure (Phase 2 Reference)
+### 4.7 Auth Route File Structure (Phase 2 Reference)
 
 ```
 server/

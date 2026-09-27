@@ -340,19 +340,19 @@ $$\text{Conversion Rate} = \left( \frac{\text{Advanced Count}}{\text{Total Appli
  * Collection: applications
  */
 const getResumeCohortPipeline = (userId) => [
-  // Stage 1: Tenant isolation, non-archived, non-empty resumeVersion
+  // Stage 1: Tenant isolation, non-archived, non-empty resumeVersionTag
   {
     $match: {
       userId: new mongoose.Types.ObjectId(userId),
       isArchived: false,
-      resumeVersion: { $nin: [null, "", "undefined"] }
+      resumeVersionTag: { $nin: [null, "", "undefined"] }
     }
   },
 
-  // Stage 2: Group by resumeVersion and aggregate progression milestones
+  // Stage 2: Group by resumeVersionTag and aggregate progression milestones
   {
     $group: {
-      _id: "$resumeVersion",
+      _id: "$resumeVersionTag",
       totalApplications: { $sum: 1 },
       appliedOnlyCount: {
         $sum: { $cond: [{ $eq: ["$status", "Applied"] }, 1, 0] }
@@ -384,7 +384,7 @@ const getResumeCohortPipeline = (userId) => [
   {
     $project: {
       _id: 0,
-      resumeVersion: "$_id",
+      resumeVersionTag: "$_id",
       totalApplications: 1,
       advancedCount: 1,
       offerCount: 1,
@@ -582,12 +582,12 @@ exports.buildResumeCohortPipeline = (userId) => [
     $match: {
       userId: new mongoose.Types.ObjectId(userId),
       isArchived: false,
-      resumeVersion: { $nin: [null, "", "undefined"] }
+      resumeVersionTag: { $nin: [null, "", "undefined"] }
     }
   },
   {
     $group: {
-      _id: "$resumeVersion",
+      _id: "$resumeVersionTag",
       totalApplications: { $sum: 1 },
       advancedCount: {
         $sum: {
@@ -606,7 +606,7 @@ exports.buildResumeCohortPipeline = (userId) => [
   {
     $project: {
       _id: 0,
-      resumeVersion: "$_id",
+      resumeVersionTag: "$_id",
       totalApplications: 1,
       advancedCount: 1,
       offerCount: 1,
