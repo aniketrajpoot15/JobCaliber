@@ -47,7 +47,7 @@ Each file follows a consistent 13-section structure:
 | 2 | **MongoDB** | [mongodb.md](./mongodb.md) | Database | 🟡 `DESIGNING` | Step 1.1 |
 | 3 | **Mongoose** | [mongoose.md](./mongoose.md) | ODM (Object Data Modeling) | 🟡 `DESIGNING` | Step 1.1 |
 | 4 | **REST API Design** | [rest-api.md](./rest-api.md) | Architecture Pattern | 🟡 `DESIGNING` | Step 1.6 |
-| 5 | Node.js | `nodejs.md` | Runtime | ⬜ `PLANNED` — Step 2.1 | — |
+| 5 | **Node.js** | [nodejs.md](./nodejs.md) | Runtime | ✅ `ACTIVE` | Step 2.1 |
 | 6 | Express.js | `express.md` | Backend Framework | ⬜ `PLANNED` — Step 2.3 | — |
 | 7 | bcryptjs | `bcrypt.md` | Password Hashing | ⬜ `PLANNED` — Step 2.7 | — |
 | 8 | JWT | `jwt.md` | Auth Tokens | ⬜ `PLANNED` — Step 2.8 | — |

@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 26 |
-| **Remaining Steps** | 121 |
+| **Completed Steps** | 27 |
+| **Remaining Steps** | 120 |
 | **Overall Progress** | **18%** |
-| **Current Phase** | Phase 1 — Architecture (✅ Complete) |
-| **Current Step** | Step 1.15 — Architecture review & approval (Complete) |
-| **Current Status** | `READY` for Phase 2: Foundation (Step 2.1) |
+| **Current Phase** | Phase 2 — Foundation (In Progress: 1/36 steps) |
+| **Current Step** | Step 2.1 — Create server directory and initialize package.json (Complete) |
+| **Current Status** | `READY` for Step 2.2 — Install server dependencies |
 
 ```
 Progress: [##################······························] 18%
-           26 / 147 steps
+           27 / 147 steps
 ```
 
 ---
@@ -33,7 +33,7 @@ Progress: [##################·························�
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
 | Phase 1: Architecture | 15 | 15 | 0 | 100% | ✅ Complete |
-| Phase 2: Foundation | 36 | 0 | 36 | 0% | ⬜ Not started |
+| Phase 2: Foundation | 36 | 1 | 35 | 3% | 🟡 In Progress |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
 | Phase 5: Interview & Debrief | 19 | 0 | 19 | 0% | ⬜ Not started |
@@ -44,31 +44,30 @@ Progress: [##################·························�
 
 ## Next Step
 
-### Step 2.1 — Create server directory and initialize package.json
+### Step 2.2 — Install server dependencies
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 2: Foundation |
-| **Objective** | Create the `server/` directory and initialize it with `npm init`. |
-| **Why** | The backend project needs a package.json before installing any dependencies. |
-| **Files involved** | `server/package.json` (created) |
-| **Expected result** | `server/` directory exists with a valid `package.json` (name: `jobcaliber-server`). |
-| **Verification** | `cd server && cat package.json` shows valid JSON. |
+| **Objective** | Install all approved backend packages. |
+| **Why** | Dependencies must be installed before writing any code that imports them. |
+| **Files involved** | `server/package.json` (updated), `server/package-lock.json` (created), `server/node_modules/` (created) |
+| **Expected result** | All 10 production dependencies installed: express, mongoose, bcryptjs, jsonwebtoken, cookie-parser, cors, dotenv, express-validator, express-mongo-sanitize, express-rate-limit, date-fns. Dev dependency: nodemon. |
+| **Verification** | `npm ls --depth=0` inside `server/` shows all packages. No extraneous packages. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 1.15 — Architecture review & approval
-- **Date Completed:** 2026-09-27
-- **Files Created/Modified:** `docs/Architecture/ANALYTICS_SPEC.md`, `docs/Architecture/API_SPEC.md`, `AGENTS.md`, `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`
-- **Key Concepts & Actions Completed:**
-  - **Full Architecture Verification:** Conducted a comprehensive continuity, integration, and security audit across all 5 core architecture documents (`DATABASE_SCHEMA.md`, `API_SPEC.md`, `UI_SPEC.md`, `ANALYTICS_SPEC.md`, `SECURITY.md`).
-  - **Cross-Layer Alignment & Bug Prevention:** Reconciled `resumeVersionTag` field naming across database schema and analytics aggregation pipelines, preventing silent runtime failures in MongoDB `$group`.
-  - **API Contract Completeness:** Formally specified `PATCH /api/auth/me` with `express-validator` rules for updating user full name, `staleThresholdDays` (7–45 days), and secure password changes.
-  - **Security & Dependency Ratification:** Ratified `helmet`, `cookie-parser`, and `cors` into `AGENTS.md` and locked `SameSite=Lax` cookie transport.
-  - **Phase 1 Sign-Off:** Officially completed Phase 1 (Architecture). The project is 100% prepared for Phase 2 scaffolding.
+### Step 2.1 — Create server directory and initialize package.json
+- **Date Completed:** 2026-09-28
+- **Files Created/Modified:** `server/package.json` (created), `tech-learning/nodejs.md` (created), `tech-learning/README.md` (updated), `docs/shared/TASKS.md` (updated), `docs/shared/PROJECT_PROGRESS.md` (updated)
+- **Key Concepts Specified:**
+  - **Node.js Runtime & Architecture:** Explored how the V8 JavaScript engine compiles JS directly into machine code, and how `libuv` manages the single-threaded asynchronous Event Loop and thread pool for non-blocking I/O.
+  - **Manifest & Metadata Anatomy:** Engineered `server/package.json` containing module entry point (`server.js`), production start script (`node server.js`), and dev restart script (`nodemon server.js`).
+  - **Semantic Versioning (SemVer):** Mastered `MAJOR.MINOR.PATCH` mechanics, caret (`^`) vs tilde (`~`) update rules, and the role of `package-lock.json` in maintaining deterministic builds.
+  - **Learning Guide:** Published comprehensive [`tech-learning/nodejs.md`](file:///c:/Users/aniket/OneDrive/Desktop/Claude%20Conversation/Projects/JobCaliber/tech-learning/nodejs.md) matching the standard 13-section format.
 
 ---
 
@@ -76,9 +75,9 @@ Progress: [##################·························�
 
 | Step | Title | Date |
 |---|---|---|
+| 2.1 | Create server directory and initialize package.json | 2026-09-28 |
 | 1.15 | Architecture review & approval | 2026-09-27 |
 | 1.14 | Define security architecture | 2026-09-26 |
-| 1.13 | Define Action Center triage logic | 2026-09-26 |
 | 1.12 | Define MongoDB aggregation pipelines for analytics | 2026-09-26 |
 | 1.11 | Define component hierarchy, layout structure & design system | 2026-09-26 |
 | 1.10 | Define page inventory and routing structure | 2026-09-26 |
