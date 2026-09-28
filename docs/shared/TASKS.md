@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (1/36 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (2/36 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -313,10 +313,10 @@
 - **Why:** Dependencies must be installed before writing any code that imports them.
 - **Files:** `server/package.json` (updated), `server/package-lock.json` (created), `server/node_modules/` (created)
 - **Prerequisites:** Step 2.1
-- **Expected Result:** All 10 production dependencies installed: express, mongoose, bcryptjs, jsonwebtoken, cookie-parser, cors, dotenv, express-validator, express-mongo-sanitize, express-rate-limit, date-fns. Dev dependency: nodemon.
-- **Verification:** `npm ls --depth=0` shows all packages. No extraneous packages.
-- **Learn/Review:** npm install, production vs. dev dependencies, why each package is needed.
-- **Status:** `NOT_STARTED`
+- **Expected Result:** All 12 production dependencies installed: express, mongoose, bcryptjs, jsonwebtoken, cookie-parser, cors, dotenv, express-validator, express-mongo-sanitize, express-rate-limit, helmet, date-fns. Dev dependency: nodemon.
+- **Verification:** `npm ls --depth=0` verified 12 production + 1 dev dependency. 0 vulnerabilities. 0 extraneous packages.
+- **Learn/Review:** npm install, production vs. dev dependencies (`--save-dev`), why each package is needed, caret versioning.
+- **Status:** `COMPLETED`
 
 ### Step 2.3 — Create .env.example and .env files
 - **Objective:** Create the environment variable template and local config.

@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 27 |
-| **Remaining Steps** | 120 |
-| **Overall Progress** | **18%** |
-| **Current Phase** | Phase 2 — Foundation (In Progress: 1/36 steps) |
-| **Current Step** | Step 2.1 — Create server directory and initialize package.json (Complete) |
-| **Current Status** | `READY` for Step 2.2 — Install server dependencies |
+| **Completed Steps** | 28 |
+| **Remaining Steps** | 119 |
+| **Overall Progress** | **19%** |
+| **Current Phase** | Phase 2 — Foundation (In Progress: 2/36 steps) |
+| **Current Step** | Step 2.2 — Install server dependencies (Complete) |
+| **Current Status** | `READY` for Step 2.3 — Create .env.example and .env files |
 
 ```
-Progress: [##################······························] 18%
-           27 / 147 steps
+Progress: [###################·····························] 19%
+           28 / 147 steps
 ```
 
 ---
@@ -33,7 +33,7 @@ Progress: [##################·························�
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
 | Phase 1: Architecture | 15 | 15 | 0 | 100% | ✅ Complete |
-| Phase 2: Foundation | 36 | 1 | 35 | 3% | 🟡 In Progress |
+| Phase 2: Foundation | 36 | 2 | 34 | 6% | 🟡 In Progress |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
 | Phase 5: Interview & Debrief | 19 | 0 | 19 | 0% | ⬜ Not started |
@@ -44,30 +44,29 @@ Progress: [##################·························�
 
 ## Next Step
 
-### Step 2.2 — Install server dependencies
+### Step 2.3 — Create .env.example and .env files
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 2: Foundation |
-| **Objective** | Install all approved backend packages. |
-| **Why** | Dependencies must be installed before writing any code that imports them. |
-| **Files involved** | `server/package.json` (updated), `server/package-lock.json` (created), `server/node_modules/` (created) |
-| **Expected result** | All 10 production dependencies installed: express, mongoose, bcryptjs, jsonwebtoken, cookie-parser, cors, dotenv, express-validator, express-mongo-sanitize, express-rate-limit, date-fns. Dev dependency: nodemon. |
-| **Verification** | `npm ls --depth=0` inside `server/` shows all packages. No extraneous packages. |
+| **Objective** | Create the environment variable template and local config. |
+| **Why** | Secrets must be in .env (gitignored). .env.example documents required variables. |
+| **Files involved** | `server/.env.example` (created), `server/.env` (created, gitignored) |
+| **Expected result** | .env.example has: NODE_ENV, PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRE. .env has actual values. |
+| **Verification** | .env.example has no real secrets. .env has working local values. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 2.1 — Create server directory and initialize package.json
+### Step 2.2 — Install server dependencies
 - **Date Completed:** 2026-09-28
-- **Files Created/Modified:** `server/package.json` (created), `tech-learning/nodejs.md` (created), `tech-learning/README.md` (updated), `docs/shared/TASKS.md` (updated), `docs/shared/PROJECT_PROGRESS.md` (updated)
-- **Key Concepts Specified:**
-  - **Node.js Runtime & Architecture:** Explored how the V8 JavaScript engine compiles JS directly into machine code, and how `libuv` manages the single-threaded asynchronous Event Loop and thread pool for non-blocking I/O.
-  - **Manifest & Metadata Anatomy:** Engineered `server/package.json` containing module entry point (`server.js`), production start script (`node server.js`), and dev restart script (`nodemon server.js`).
-  - **Semantic Versioning (SemVer):** Mastered `MAJOR.MINOR.PATCH` mechanics, caret (`^`) vs tilde (`~`) update rules, and the role of `package-lock.json` in maintaining deterministic builds.
-  - **Learning Guide:** Published comprehensive [`tech-learning/nodejs.md`](file:///c:/Users/aniket/OneDrive/Desktop/Claude%20Conversation/Projects/JobCaliber/tech-learning/nodejs.md) matching the standard 13-section format.
+- **Files Created/Modified:** `server/package.json` (updated), `server/package-lock.json` (created), `server/node_modules/` (created)
+- **Key Concepts Learned:**
+  - **Production vs Dev Dependencies:** Production packages (`--save`, the default) ship with the deployed app. Dev packages (`--save-dev`) are only needed during development (e.g., `nodemon` for auto-restart).
+  - **Dependency Audit:** Ran `npm ls --depth=0` to verify 12 production + 1 dev dependency installed with 0 vulnerabilities and 0 extraneous packages.
+  - **Why Each Package Exists:** Every dependency maps to a specific architectural requirement — `express` (HTTP framework), `mongoose` (MongoDB ODM), `bcryptjs` (password hashing), `jsonwebtoken` (auth tokens), `cookie-parser` (JWT extraction), `cors` (cross-origin), `dotenv` (env vars), `express-validator` (input validation), `express-mongo-sanitize` (NoSQL injection defense), `express-rate-limit` (brute-force protection), `helmet` (HTTP security headers), `date-fns` (date utilities).
 
 ---
 
@@ -75,9 +74,9 @@ Progress: [##################·························�
 
 | Step | Title | Date |
 |---|---|---|
+| 2.2 | Install server dependencies | 2026-09-28 |
 | 2.1 | Create server directory and initialize package.json | 2026-09-28 |
 | 1.15 | Architecture review & approval | 2026-09-27 |
-| 1.14 | Define security architecture | 2026-09-26 |
 | 1.12 | Define MongoDB aggregation pipelines for analytics | 2026-09-26 |
 | 1.11 | Define component hierarchy, layout structure & design system | 2026-09-26 |
 | 1.10 | Define page inventory and routing structure | 2026-09-26 |
