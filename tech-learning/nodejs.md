@@ -200,12 +200,20 @@ npm start
 ```
 
 ### Passing Environment Variables to Node
-Node makes system environment variables accessible via the global `process.env` object:
+Node makes system environment variables accessible via the global `process.env` object.
+
+In local development, we keep secrets in a `.env` file (which is gitignored) and load them into `process.env` at startup using `dotenv`:
 ```javascript
-// Accessing PORT from environment or falling back to 5000
+// Load environment variables from .env file into process.env
+require('dotenv').config();
+
 const PORT = process.env.PORT || 5000;
 console.log(`Server starting on port ${PORT}`);
 ```
+
+#### Why `.env` and `.env.example`?
+- **`.env` (Private):** Contains actual secrets (`JWT_SECRET`, database credentials). Added to `.gitignore` so it is NEVER pushed to version control.
+- **`.env.example` (Public template):** Committed to Git. Lists all variable names with placeholder values and instructions, so any developer or deployment knows which variables must be configured.
 
 ---
 
@@ -219,13 +227,14 @@ console.log(`Server starting on port ${PORT}`);
 | **npm** | Node Package Manager; the command-line tool used to install, manage, and publish JavaScript packages. |
 | **`package-lock.json`** | Auto-generated file that locks the exact versions and hash checksums of every nested dependency installed. |
 | **`node_modules/`** | The directory where npm installs packages. Must **always** be in `.gitignore` because it is large and can be regenerated at any time with `npm install`. |
+| **`process.env`** | Node.js global object containing user environment variables at runtime. |
 
 ---
 
 ## 10. Common Mistakes to Avoid
 
-### 1. Committing `node_modules` to Git
-`node_modules` can contain tens of thousands of files and hundreds of megabytes. Never commit it! Always verify `.gitignore` contains `node_modules/`.
+### 1. Committing `node_modules` or `.env` to Git
+`node_modules` can contain tens of thousands of files, and `.env` contains cryptographic secrets and passwords. Never commit either! Always verify `.gitignore` contains `node_modules/` and `.env`.
 
 ### 2. Blocking the Single Thread with Heavy Synchronous Work
 Since JavaScript in Node executes on a single thread, never run long-running CPU loops synchronously (like a while loop iterating 10 billion times, or `fs.readFileSync` inside a request handler). It will freeze the server for **all** other users until it finishes. Always use async methods (`fs.promises.readFile`, Mongoose `async/await`).
@@ -243,7 +252,7 @@ Before moving to the next step, verify you can answer these questions:
 - [ ] Why is Node.js called "single-threaded, non-blocking"?
 - [ ] What is the purpose of `package.json`?
 - [ ] What is the difference between `npm start` and `npm run dev`?
-- [ ] Why must `node_modules/` never be committed to Git?
+- [ ] Why must `node_modules/` and `.env` never be committed to Git?
 
 ---
 
@@ -257,8 +266,8 @@ Before moving to the next step, verify you can answer these questions:
 ## 13. Learning Order Context
 
 ```
-PREVIOUS:  docs/Architecture/ (Architecture Specs)
-CURRENT:   tech-learning/nodejs.md  <-- YOU ARE HERE
-NEXT:      Step 2.2 — Install server dependencies
-LATER:     tech-learning/express.md (Step 2.3)
+PREVIOUS:  Step 2.2 — Install server dependencies
+CURRENT:   Step 2.3 — Create .env.example and .env files  <-- COMPLETED
+NEXT:      Step 2.4 — Create Express application entry point (server/server.js)
+LATER:     tech-learning/express.md (Step 2.4 / 2.5)
 ```

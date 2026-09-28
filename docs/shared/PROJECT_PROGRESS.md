@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 28 |
-| **Remaining Steps** | 119 |
-| **Overall Progress** | **19%** |
-| **Current Phase** | Phase 2 — Foundation (In Progress: 2/36 steps) |
-| **Current Step** | Step 2.2 — Install server dependencies (Complete) |
-| **Current Status** | `READY` for Step 2.3 — Create .env.example and .env files |
+| **Completed Steps** | 29 |
+| **Remaining Steps** | 118 |
+| **Overall Progress** | **20%** |
+| **Current Phase** | Phase 2 — Foundation (In Progress: 3/36 steps) |
+| **Current Step** | Step 2.3 — Create .env.example and .env files (Complete) |
+| **Current Status** | `READY` for Step 2.4 — Create Express application entry point |
 
 ```
-Progress: [###################·····························] 19%
-           28 / 147 steps
+Progress: [####################····························] 20%
+           29 / 147 steps
 ```
 
 ---
@@ -33,7 +33,7 @@ Progress: [###################·························
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
 | Phase 1: Architecture | 15 | 15 | 0 | 100% | ✅ Complete |
-| Phase 2: Foundation | 36 | 2 | 34 | 6% | 🟡 In Progress |
+| Phase 2: Foundation | 36 | 3 | 33 | 8% | 🟡 In Progress |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
 | Phase 5: Interview & Debrief | 19 | 0 | 19 | 0% | ⬜ Not started |
@@ -44,29 +44,30 @@ Progress: [###################·························
 
 ## Next Step
 
-### Step 2.3 — Create .env.example and .env files
+### Step 2.4 — Create Express application entry point
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 2: Foundation |
-| **Objective** | Create the environment variable template and local config. |
-| **Why** | Secrets must be in .env (gitignored). .env.example documents required variables. |
-| **Files involved** | `server/.env.example` (created), `server/.env` (created, gitignored) |
-| **Expected result** | .env.example has: NODE_ENV, PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRE. .env has actual values. |
-| **Verification** | .env.example has no real secrets. .env has working local values. |
+| **Objective** | Create `server/server.js` with basic Express setup (listening on PORT). |
+| **Why** | The entry point must exist before adding middleware or routes. |
+| **Files involved** | `server/server.js` (created) |
+| **Expected result** | Express app that starts and logs "Server running on port 5000." |
+| **Verification** | Run `node server.js` — see the startup log message. No errors. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 2.2 — Install server dependencies
+### Step 2.3 — Create .env.example and .env files
 - **Date Completed:** 2026-09-28
-- **Files Created/Modified:** `server/package.json` (updated), `server/package-lock.json` (created), `server/node_modules/` (created)
+- **Files Created/Modified:** `server/.env.example` (created, tracked in Git), `server/.env` (created, ignored in Git), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/nodejs.md`
 - **Key Concepts Learned:**
-  - **Production vs Dev Dependencies:** Production packages (`--save`, the default) ship with the deployed app. Dev packages (`--save-dev`) are only needed during development (e.g., `nodemon` for auto-restart).
-  - **Dependency Audit:** Ran `npm ls --depth=0` to verify 12 production + 1 dev dependency installed with 0 vulnerabilities and 0 extraneous packages.
-  - **Why Each Package Exists:** Every dependency maps to a specific architectural requirement — `express` (HTTP framework), `mongoose` (MongoDB ODM), `bcryptjs` (password hashing), `jsonwebtoken` (auth tokens), `cookie-parser` (JWT extraction), `cors` (cross-origin), `dotenv` (env vars), `express-validator` (input validation), `express-mongo-sanitize` (NoSQL injection defense), `express-rate-limit` (brute-force protection), `helmet` (HTTP security headers), `date-fns` (date utilities).
+  - **Secrets Management:** Sensitive keys (database URIs, JWT signing secrets) must never be stored in source code or committed to Git.
+  - **The `.env.example` Template Pattern:** We maintain a template in Git with placeholder values and instructions, serving as contract documentation for the application's required environment variables.
+  - **Cryptographic Keys:** Generated 64-byte (512-bit) cryptographically strong random hex keys for `JWT_SECRET` and `COOKIE_SECRET` using Node's native `crypto` module.
+  - **Git Ignore Verification:** Confirmed that `.env` is ignored by `.gitignore` while `.env.example` is tracked.
 
 ---
 
@@ -74,6 +75,7 @@ Progress: [###################·························
 
 | Step | Title | Date |
 |---|---|---|
+| 2.3 | Create .env.example and .env files | 2026-09-28 |
 | 2.2 | Install server dependencies | 2026-09-28 |
 | 2.1 | Create server directory and initialize package.json | 2026-09-28 |
 | 1.15 | Architecture review & approval | 2026-09-27 |

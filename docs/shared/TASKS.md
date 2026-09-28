@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (2/36 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (3/36 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -323,10 +323,10 @@
 - **Why:** Secrets must be in .env (gitignored). .env.example documents required variables.
 - **Files:** `server/.env.example` (created), `server/.env` (created, gitignored)
 - **Prerequisites:** Step 2.2
-- **Expected Result:** .env.example has: NODE_ENV, PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRE. .env has actual values.
-- **Verification:** .env.example has no real secrets. .env has working local values.
+- **Expected Result:** .env.example has: NODE_ENV, PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRE, COOKIE_SECRET, CLIENT_URL. .env has actual local values.
+- **Verification:** .env.example has no real secrets (placeholder strings only). .env has valid local values with 64-byte crypto hex keys. `git status` confirmed `.env` is ignored and untracked by Git.
 - **Learn/Review:** Environment variables, why secrets must never be committed, .env patterns.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 2.4 — Create Express application entry point
 - **Objective:** Create `server/server.js` with basic Express setup (listening on PORT).
