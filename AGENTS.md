@@ -59,6 +59,8 @@ CAPTURE (< 15s) → TRACK (pipeline) → DEBRIEF (90s) → LEARN (patterns) → 
 
 5. **NEVER BUILD AHEAD:** After completing ONE step, STOP. Do not automatically continue. Wait for explicit approval ("Proceed", "Next step", "Continue").
 
+6. **NO AUTOMATED GIT COMMITS OR PUSHES:** The AI agent must NEVER run `git commit` or `git push` (neither locally nor remotely). The agent only writes, edits, tests, and verifies code. Staging files, writing commit messages, committing, and pushing to GitHub is 100% reserved for the developer so they have full manual control over their repository and contribution graph.
+
 ---
 
 ## 4. Technology Stack (Locked — ADR-002)
@@ -358,11 +360,12 @@ STATUS: WAITING FOR EXPLICIT APPROVAL.
 
 ## 14. Git Rules
 
-1. **Initialize Git from the beginning.**
-2. **Meaningful commits:** Describe what changed and why. No "fix stuff" or "update code."
-3. **Small commits:** One logical change per commit.
-4. **Never commit:** `.env`, `node_modules/`, API keys, passwords, secrets.
-5. **Commit message format:** `<type>: <description>` (e.g., `feat: add application model`, `fix: stale calculation off-by-one`)
+1. **Human-Controlled Commits:** The AI agent must **NEVER** run `git commit` or `git push`. The agent prepares the changes, updates tracking docs, and suggests the commit message. The developer reviews and commits manually.
+2. **Initialize Git from the beginning.**
+3. **Meaningful commits:** Describe what changed and why. No "fix stuff" or "update code."
+4. **Small commits:** One logical change per commit.
+5. **Never commit:** `.env`, `node_modules/`, API keys, passwords, secrets.
+6. **Commit message format:** `<type>: <description>` (e.g., `feat: add application model`, `fix: stale calculation off-by-one`)
 
 ---
 
@@ -379,6 +382,7 @@ The AI coding agent must NEVER:
 - ❌ Disable validation for convenience
 - ❌ Hardcode secrets or credentials
 - ❌ Commit secrets to Git
+- ❌ Run `git commit` or `git push` (all commits and pushes are strictly done by the developer)
 - ❌ Claim success without verification
 - ❌ Build features not yet approved
 - ❌ Use localStorage for JWT tokens

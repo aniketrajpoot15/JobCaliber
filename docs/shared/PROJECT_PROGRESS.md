@@ -2,7 +2,7 @@
 
 # JobCaliber — Project Progress
 
-> **Last Updated:** 2026-09-26  
+> **Last Updated:** 2026-09-29  
 > **Reference:** `docs/shared/TASKS.md` for full step details  
 > **Tech Learning Hub:** `tech-learning/README.md` for technology notes and internals
 
@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 29 |
-| **Remaining Steps** | 118 |
-| **Overall Progress** | **20%** |
-| **Current Phase** | Phase 2 — Foundation (In Progress: 3/36 steps) |
-| **Current Step** | Step 2.3 — Create .env.example and .env files (Complete) |
-| **Current Status** | `READY` for Step 2.4 — Create Express application entry point |
+| **Completed Steps** | 32 |
+| **Remaining Steps** | 115 |
+| **Overall Progress** | **22%** |
+| **Current Phase** | Phase 2 — Foundation (In Progress: 6/36 steps) |
+| **Current Step** | Step 2.6 — Create MongoDB connection module (Complete) |
+| **Current Status** | `READY` for Step 2.7 — Connect the application to MongoDB |
 
 ```
-Progress: [####################····························] 20%
-           29 / 147 steps
+Progress: [#####################···························] 22%
+           32 / 147 steps
 ```
 
 ---
@@ -33,7 +33,7 @@ Progress: [####################························�
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
 | Phase 1: Architecture | 15 | 15 | 0 | 100% | ✅ Complete |
-| Phase 2: Foundation | 36 | 3 | 33 | 8% | 🟡 In Progress |
+| Phase 2: Foundation | 36 | 6 | 30 | 17% | 🟡 In Progress |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
 | Phase 5: Interview & Debrief | 19 | 0 | 19 | 0% | ⬜ Not started |
@@ -44,30 +44,32 @@ Progress: [####################························�
 
 ## Next Step
 
-### Step 2.4 — Create Express application entry point
+### Step 2.7 — Connect the application to MongoDB
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 2: Foundation |
-| **Objective** | Create `server/server.js` with basic Express setup (listening on PORT). |
-| **Why** | The entry point must exist before adding middleware or routes. |
-| **Files involved** | `server/server.js` (created) |
-| **Expected result** | Express app that starts and logs "Server running on port 5000." |
-| **Verification** | Run `node server.js` — see the startup log message. No errors. |
+| **Objective** | Call `connectDB()` from `server.js` and verify database connection. |
+| **Why** | The server should connect to the database before accepting requests. |
+| **Files involved** | `server/server.js` (modified) |
+| **Expected result** | Server starts, connects to MongoDB, logs "MongoDB Connected: [host]". |
+| **Verification** | Run `node server.js` with a valid MONGO_URI — see both server and DB connection logs. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 2.3 — Create .env.example and .env files
-- **Date Completed:** 2026-09-28
-- **Files Created/Modified:** `server/.env.example` (created, tracked in Git), `server/.env` (created, ignored in Git), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/nodejs.md`
+### Step 2.6 — Create MongoDB connection module
+- **Date Completed:** 2026-09-29
+- **Files Created/Modified:** `server/config/db.js` (created), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/project-file-map.md`
 - **Key Concepts Learned:**
-  - **Secrets Management:** Sensitive keys (database URIs, JWT signing secrets) must never be stored in source code or committed to Git.
-  - **The `.env.example` Template Pattern:** We maintain a template in Git with placeholder values and instructions, serving as contract documentation for the application's required environment variables.
-  - **Cryptographic Keys:** Generated 64-byte (512-bit) cryptographically strong random hex keys for `JWT_SECRET` and `COOKIE_SECRET` using Node's native `crypto` module.
-  - **Git Ignore Verification:** Confirmed that `.env` is ignored by `.gitignore` while `.env.example` is tracked.
+  - **Single Responsibility Principle:** Database connection logic is separated into its own module (`config/db.js`) rather than being inlined in `server.js`. Each file has one job.
+  - **`mongoose.connect(URI)`:** Returns a promise that resolves to a connection object. We use `await` to wait for it. The connection object has `.connection.host` to verify which database we connected to.
+  - **Crash-on-Failure Pattern:** If the database connection fails, we call `process.exit(1)` to terminate the process. A server without a database can't serve any useful requests — it's better to crash loudly than silently accept requests and fail.
+  - **`process.exit(code)`:** Code `0` = success, code `1` = failure. In production, a process manager (PM2) would auto-restart the process.
+  - **`module.exports = connectDB`:** Exports the function so `server.js` can import and call it. This is the CommonJS module pattern.
+  - **Mongoose 6+ Defaults:** Options like `useNewUrlParser` and `useUnifiedTopology` are no longer needed — they're defaults in modern Mongoose versions.
 
 ---
 
@@ -75,6 +77,9 @@ Progress: [####################························�
 
 | Step | Title | Date |
 |---|---|---|
+| 2.6 | Create MongoDB connection module | 2026-09-29 |
+| 2.5 | Configure Express middleware | 2026-09-29 |
+| 2.4 | Create Express application entry point | 2026-09-29 |
 | 2.3 | Create .env.example and .env files | 2026-09-28 |
 | 2.2 | Install server dependencies | 2026-09-28 |
 | 2.1 | Create server directory and initialize package.json | 2026-09-28 |
@@ -91,17 +96,6 @@ Progress: [####################························�
 | 1.3 | Define InterviewRound collection schema | 2026-09-26 |
 | 1.2 | Define Application collection schema | 2026-09-26 |
 | 1.1 | Define User collection schema | 2026-09-26 |
-| 0.11 | Granular task decomposition & project setup files | 2026-09-24 |
-| 0.10 | Create TASKS.md | 2026-09-24 |
-| 0.9 | Rebuild README.md | 2026-09-24 |
-| 0.8 | Rebuild AGENTS.md | 2026-09-24 |
-| 0.7 | Create DECISIONS.md | 2026-09-24 |
-| 0.6 | Create PRD.md | 2026-09-24 |
-| 0.5 | Create PROJECT_MASTER_SPEC.md | 2026-09-24 |
-| 0.4 | Create docs/RESEARCH.md | 2026-09-24 |
-| 0.3 | Feature Specification & User Stories | 2026-09-24 |
-| 0.2 | Product Direction & Positioning | 2026-09-24 |
-| 0.1 | Product Discovery & Validation Research | 2026-09-24 |
 
 ---
 
@@ -111,26 +105,15 @@ None.
 
 ---
 
-## Next Steps
-
-| Step | Title | Phase |
-|---|---|---|
-| 1.15 | Architecture review & approval | Phase 1: Architecture |
-| 2.1 | Create server directory and initialize package.json | Phase 2: Foundation |
-| 2.2 | Install server dependencies | Phase 2: Foundation |
-
----
-
 ## Milestones
 
 | Milestone | Steps Complete | Target | Status |
 |---|---|---|---|
 | 📄 Documentation complete | 11/11 | Phase 0 | ✅ Complete |
-| 📐 Architecture complete | 14/15 | Phase 1 | 🟡 In Progress |
-| 🔐 Auth working (end-to-end) | 0/36 | Phase 2 | ⬜ |
+| 📐 Architecture complete | 15/15 | Phase 1 | ✅ Complete |
+| 🔐 Auth working (end-to-end) | 6/36 | Phase 2 | 🟡 In Progress |
 | 📋 Pipeline working (Kanban + Table) | 0/31 | Phase 3 | ⬜ |
 | ⏰ Stale + Action Center working | 0/9 | Phase 4 | ⬜ |
 | 🎤 Debrief flow working | 0/19 | Phase 5 | ⬜ |
 | 📊 Analytics charts working | 0/13 | Phase 6 | ⬜ |
 | ✅ MVP complete | 0/13 | Phase 7 | ⬜ |
-

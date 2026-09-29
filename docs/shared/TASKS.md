@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (3/36 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (6/36 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -334,29 +334,29 @@
 - **Files:** `server/server.js` (created)
 - **Prerequisites:** Step 2.2
 - **Expected Result:** Express app that starts and logs "Server running on port 5000."
-- **Verification:** Run `node server.js` — see the startup log message. No errors.
-- **Learn/Review:** Express app creation, app.listen(), process.env usage.
-- **Status:** `NOT_STARTED`
+- **Verification:** Run `node server.js` — see the startup log message. No errors. Health-check route at `GET /` returns `{ success: true, message: "JobCaliber API is running", environment: "development" }`.
+- **Learn/Review:** Express app creation, app.listen(), process.env usage, dotenv.config() placement.
+- **Status:** `COMPLETED`
 
 ### Step 2.5 — Configure Express middleware
-- **Objective:** Add JSON parsing, CORS, and cookie-parser middleware to the Express app.
-- **Why:** These middleware are required before any route can receive or respond to requests.
-- **Files:** `server/server.js` (modified)
+- **Objective:** Add JSON parsing, CORS, Helmet, cookie-parser, and NoSQL sanitization middleware to the Express app.
+- **Why:** These middleware are required before any route can receive or respond to requests securely.
+- **Files:** `server/server.js` (modified), `server/middleware/mongoSanitize.js` (created)
 - **Prerequisites:** Step 2.4
-- **Expected Result:** Express app has: express.json(), cors({ credentials: true }), cookieParser().
-- **Verification:** Send a POST request with JSON body — server parses it without error.
-- **Learn/Review:** Express middleware concept, middleware ordering, CORS basics, what cookie-parser does.
-- **Status:** `NOT_STARTED`
+- **Expected Result:** Express app has 5-stage middleware pipeline: CORS → Helmet → body parsers → cookie-parser → NoSQL sanitizer.
+- **Verification:** Server starts without errors. GET / returns 200 with JSON + all Helmet security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options). CORS credentials enabled. Custom sanitizer works without Express 5 crash.
+- **Learn/Review:** Express middleware concept, middleware ordering, CORS basics (origin whitelist, credentials), Helmet security headers, cookie-parser (signed cookies), NoSQL injection attacks, why express-mongo-sanitize is abandoned (Express 5 incompatibility), writing custom middleware.
+- **Status:** `COMPLETED`
 
 ### Step 2.6 — Create MongoDB connection module
 - **Objective:** Create `server/config/db.js` with Mongoose connection logic.
-- **Why:** Database connection is separated from server.js for clean architecture.
+- **Why:** Database connection is separated from server.js for clean architecture (Single Responsibility Principle).
 - **Files:** `server/config/db.js` (created)
 - **Prerequisites:** Step 2.3
-- **Expected Result:** Module exports a `connectDB` function that connects to MONGO_URI with error handling.
-- **Verification:** Code review — connection function uses try/catch, logs success/failure.
-- **Learn/Review:** Mongoose.connect(), connection options, async/await, graceful error handling.
-- **Status:** `NOT_STARTED`
+- **Expected Result:** Module exports an async `connectDB` function that connects to MONGO_URI with error handling.
+- **Verification:** `node -e "require('./config/db.js')"` loads without error. Module exports a function. Code review: uses try/catch, logs success with host, exits process on failure.
+- **Learn/Review:** Mongoose.connect(), async/await, try/catch error handling, process.exit(1), why to crash on DB failure, module.exports pattern, Single Responsibility Principle.
+- **Status:** `COMPLETED`
 
 ### Step 2.7 — Connect the application to MongoDB
 - **Objective:** Call `connectDB()` from `server.js` and verify database connection.

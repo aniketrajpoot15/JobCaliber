@@ -4,8 +4,8 @@
 
 > **Purpose:** Learn every technology used in JobCaliber, one at a time, in the right order.  
 > **Rule:** A technology file is only created when that technology is actively used or being designed in the project. No premature documentation.  
-> **Last Updated:** 2026-09-26  
-> **Current Phase:** Phase 1 — Architecture (Steps 1.1–1.14 complete)
+> **Last Updated:** 2026-09-29  
+> **Current Phase:** Phase 2 — Foundation (Steps 2.1–2.4 complete)
 
 ---
 
@@ -48,7 +48,7 @@ Each file follows a consistent 13-section structure:
 | 3 | **Mongoose** | [mongoose.md](./mongoose.md) | ODM (Object Data Modeling) | 🟡 `DESIGNING` | Step 1.1 |
 | 4 | **REST API Design** | [rest-api.md](./rest-api.md) | Architecture Pattern | 🟡 `DESIGNING` | Step 1.6 |
 | 5 | **Node.js** | [nodejs.md](./nodejs.md) | Runtime | ✅ `ACTIVE` | Step 2.1 |
-| 6 | Express.js | `express.md` | Backend Framework | ⬜ `PLANNED` — Step 2.3 | — |
+| 6 | **Express.js** | [express.md](./express.md) | Backend Framework | ✅ `ACTIVE` | Step 2.4 |
 | 7 | bcryptjs | `bcrypt.md` | Password Hashing | ⬜ `PLANNED` — Step 2.7 | — |
 | 8 | JWT | `jwt.md` | Auth Tokens | ⬜ `PLANNED` — Step 2.8 | — |
 | 9 | React 18 | `react.md` | Frontend Framework | ⬜ `PLANNED` — Step 2.19 | — |
@@ -63,7 +63,7 @@ Each file follows a consistent 13-section structure:
 
 ## Recommended Learning Order
 
-### Phase 1 — Architecture (YOU ARE HERE)
+### Phase 1 — Architecture (✅ Complete)
 
 ```
 Step 1: Git           → How version control works, .gitignore, commits
@@ -72,13 +72,11 @@ Step 3: Mongoose      → What an ODM is, schemas, validation, enums, references
 Step 4: REST API      → What REST is, HTTP methods, status codes, endpoint design
 ```
 
-> You should understand these four BEFORE moving to Phase 2.
-
-### Phase 2 — Foundation (when you get here)
+### Phase 2 — Foundation (YOU ARE HERE)
 
 ```
-Step 5: Node.js       → What a runtime is, event loop, npm, package.json
-Step 6: Express.js    → What a framework is, routes, middleware, request/response
+Step 5: Node.js       → What a runtime is, event loop, npm, package.json ✅
+Step 6: Express.js    → What a framework is, routes, middleware, .env, dotenv ✅
 Step 7: bcryptjs      → How password hashing works, salt rounds, why not plaintext
 Step 8: JWT           → What tokens are, how auth works, cookies vs localStorage
 ```
@@ -145,10 +143,13 @@ All of the above is version-controlled by Git.
 
 ```
 tech-learning/
-├── README.md        ← You are here (index & learning roadmap)
-├── git.md           ← ✅ Active
-├── mongodb.md       ← 🟡 Designing
-├── mongoose.md      ← 🟡 Designing
-├── rest-api.md      ← 🟡 Designing (NEW — Step 1.6)
+├── README.md              ← You are here (index & learning roadmap)
+├── git.md                 ← ✅ Active
+├── mongodb.md             ← 🟡 Designing
+├── mongoose.md            ← 🟡 Designing
+├── rest-api.md            ← 🟡 Designing
+├── nodejs.md              ← ✅ Active
+├── express.md             ← ✅ Active (NEW — Step 2.4)
+├── project-file-map.md    ← ✅ Active (every file in the project explained)
 └── (future files created when technologies are introduced)
 ```
