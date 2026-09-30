@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (6/36 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (8/36 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -363,20 +363,20 @@
 - **Why:** The server should connect to the database before accepting requests.
 - **Files:** `server/server.js` (modified)
 - **Prerequisites:** Steps 2.4, 2.6
-- **Expected Result:** Server starts, connects to MongoDB, logs "MongoDB Connected: [host]".
-- **Verification:** Run `node server.js` with a valid MONGO_URI — see both server and DB connection logs.
-- **Learn/Review:** Async startup patterns, connecting to MongoDB Atlas vs. local MongoDB.
-- **Status:** `NOT_STARTED`
+- **Expected Result:** Server starts, connects to MongoDB, logs "MongoDB Connected: localhost", then "Server running on port 5000".
+- **Verification:** Run `node server.js` — see both logs in correct order (DB first, then server). Health-check route still returns 200.
+- **Learn/Review:** Async IIFE pattern (Immediately Invoked Function Expression), connect-then-listen startup sequence, why top-level await isn't available in CommonJS.
+- **Status:** `COMPLETED`
 
 ### Step 2.8 — Create global error handler middleware
 - **Objective:** Create `server/middleware/errorHandler.js` — centralized error response formatting.
 - **Why:** Without a global error handler, unhandled errors crash the server or leak stack traces.
 - **Files:** `server/middleware/errorHandler.js` (created), `server/server.js` (modified)
 - **Prerequisites:** Step 2.5
-- **Expected Result:** Middleware catches errors and returns consistent JSON: { success: false, message, stack (dev only) }.
-- **Verification:** Throw an error in a test route — error handler returns formatted JSON, not raw stack.
-- **Learn/Review:** Express error-handling middleware (4 params), NODE_ENV conditional logic.
-- **Status:** `NOT_STARTED`
+- **Expected Result:** Middleware catches errors and returns consistent JSON: `{ success: false, message, stack (dev only) }`. Handles Mongoose CastError, duplicate key (11000), and ValidationError specifically.
+- **Verification:** Server starts without errors. Non-existent routes return 404 (not crash). Error handler registered as LAST middleware in server.js.
+- **Learn/Review:** Express error-handling middleware (4 params vs 3), NODE_ENV conditional logic, Mongoose error types (CastError, code 11000, ValidationError), spread operator for conditional properties.
+- **Status:** `COMPLETED`
 
 ### Step 2.9 — Create server constants file
 - **Objective:** Create `server/utils/constants.js` with all enum values.

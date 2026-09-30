@@ -2,7 +2,7 @@
 
 # JobCaliber — Project Progress
 
-> **Last Updated:** 2026-09-29  
+> **Last Updated:** 2026-09-30  
 > **Reference:** `docs/shared/TASKS.md` for full step details  
 > **Tech Learning Hub:** `tech-learning/README.md` for technology notes and internals
 
@@ -13,16 +13,16 @@
 | Metric | Value |
 |---|---|
 | **Total Steps** | 147 |
-| **Completed Steps** | 32 |
-| **Remaining Steps** | 115 |
-| **Overall Progress** | **22%** |
-| **Current Phase** | Phase 2 — Foundation (In Progress: 6/36 steps) |
-| **Current Step** | Step 2.6 — Create MongoDB connection module (Complete) |
-| **Current Status** | `READY` for Step 2.7 — Connect the application to MongoDB |
+| **Completed Steps** | 34 |
+| **Remaining Steps** | 113 |
+| **Overall Progress** | **23%** |
+| **Current Phase** | Phase 2 — Foundation (In Progress: 8/36 steps) |
+| **Current Step** | Step 2.8 — Create global error handler middleware (Complete) |
+| **Current Status** | `READY` for Step 2.9 — Create server constants file |
 
 ```
-Progress: [#####################···························] 22%
-           32 / 147 steps
+Progress: [#####################···························] 23%
+           34 / 147 steps
 ```
 
 ---
@@ -33,7 +33,7 @@ Progress: [#####################························
 |---|---|---|---|---|---|
 | Phase 0: Research & Documentation | 11 | 11 | 0 | 100% | ✅ Complete |
 | Phase 1: Architecture | 15 | 15 | 0 | 100% | ✅ Complete |
-| Phase 2: Foundation | 36 | 6 | 30 | 17% | 🟡 In Progress |
+| Phase 2: Foundation | 36 | 8 | 28 | 22% | 🟡 In Progress |
 | Phase 3: Core Data | 31 | 0 | 31 | 0% | ⬜ Not started |
 | Phase 4: Pipeline Engine | 9 | 0 | 9 | 0% | ⬜ Not started |
 | Phase 5: Interview & Debrief | 19 | 0 | 19 | 0% | ⬜ Not started |
@@ -44,32 +44,34 @@ Progress: [#####################························
 
 ## Next Step
 
-### Step 2.7 — Connect the application to MongoDB
+### Step 2.9 — Create server constants file
 
 | Field | Value |
 |---|---|
 | **Status** | `NOT_STARTED` (Ready to start) |
 | **Phase** | Phase 2: Foundation |
-| **Objective** | Call `connectDB()` from `server.js` and verify database connection. |
-| **Why** | The server should connect to the database before accepting requests. |
-| **Files involved** | `server/server.js` (modified) |
-| **Expected result** | Server starts, connects to MongoDB, logs "MongoDB Connected: [host]". |
-| **Verification** | Run `node server.js` with a valid MONGO_URI — see both server and DB connection logs. |
+| **Objective** | Create `server/utils/constants.js` with all enum values. |
+| **Why** | Enums must be defined once and shared — no hardcoded strings anywhere. |
+| **Files involved** | `server/utils/constants.js` (created) |
+| **Expected result** | Exports: STATUS_ENUM, ROUND_TYPE_ENUM, WORK_MODE_ENUM, SOURCE_ENUM, MAX_ACTION_CENTER_ITEMS, DEFAULT_STALE_THRESHOLD_DAYS. |
+| **Verification** | Code review — all 7 pipeline statuses present. All 5 round types present. |
 
 ---
 
 ## Latest Completed Step & Concepts Learned
 
-### Step 2.6 — Create MongoDB connection module
-- **Date Completed:** 2026-09-29
-- **Files Created/Modified:** `server/config/db.js` (created), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/project-file-map.md`
+### Step 2.8 — Create global error handler middleware
+- **Date Completed:** 2026-09-30
+- **Files Created/Modified:** `server/middleware/errorHandler.js` (created), `server/server.js` (modified — import + register as last middleware), `docs/shared/TASKS.md`, `docs/shared/PROJECT_PROGRESS.md`, `tech-learning/project-file-map.md`
 - **Key Concepts Learned:**
-  - **Single Responsibility Principle:** Database connection logic is separated into its own module (`config/db.js`) rather than being inlined in `server.js`. Each file has one job.
-  - **`mongoose.connect(URI)`:** Returns a promise that resolves to a connection object. We use `await` to wait for it. The connection object has `.connection.host` to verify which database we connected to.
-  - **Crash-on-Failure Pattern:** If the database connection fails, we call `process.exit(1)` to terminate the process. A server without a database can't serve any useful requests — it's better to crash loudly than silently accept requests and fail.
-  - **`process.exit(code)`:** Code `0` = success, code `1` = failure. In production, a process manager (PM2) would auto-restart the process.
-  - **`module.exports = connectDB`:** Exports the function so `server.js` can import and call it. This is the CommonJS module pattern.
-  - **Mongoose 6+ Defaults:** Options like `useNewUrlParser` and `useUnifiedTopology` are no longer needed — they're defaults in modern Mongoose versions.
+  - **Error Middleware vs Normal Middleware:** Normal middleware has 3 params `(req, res, next)`. Error middleware has 4 params `(err, req, res, next)`. Express uses the parameter count to distinguish them — the 4th param tells Express "this is an error handler."
+  - **Why Register LAST:** Error middleware must be the last `app.use()` call. Express routes errors to it only if no previous middleware handled them. If registered before routes, it never catches route errors.
+  - **Mongoose Error Types:** Three specific error types get user-friendly messages:
+    - `CastError` → invalid ObjectId format → 400
+    - `code: 11000` → duplicate key violation → 409
+    - `ValidationError` → schema validation failure → 400 with field-level errors
+  - **Information Leakage Prevention:** Stack traces are ONLY included in development mode (`NODE_ENV=development`). In production, attackers would see file paths and internal structure.
+  - **Conditional Spread:** `...(isDevelopment && { stack: err.stack })` — if condition is true, spreads the object; if false, spreads `false` (which adds nothing to the object).
 
 ---
 
@@ -77,6 +79,8 @@ Progress: [#####################························
 
 | Step | Title | Date |
 |---|---|---|
+| 2.8 | Create global error handler middleware | 2026-09-30 |
+| 2.7 | Connect the application to MongoDB | 2026-09-30 |
 | 2.6 | Create MongoDB connection module | 2026-09-29 |
 | 2.5 | Configure Express middleware | 2026-09-29 |
 | 2.4 | Create Express application entry point | 2026-09-29 |
@@ -84,18 +88,6 @@ Progress: [#####################························
 | 2.2 | Install server dependencies | 2026-09-28 |
 | 2.1 | Create server directory and initialize package.json | 2026-09-28 |
 | 1.15 | Architecture review & approval | 2026-09-27 |
-| 1.12 | Define MongoDB aggregation pipelines for analytics | 2026-09-26 |
-| 1.11 | Define component hierarchy, layout structure & design system | 2026-09-26 |
-| 1.10 | Define page inventory and routing structure | 2026-09-26 |
-| 1.9 | Define Analytics API endpoints | 2026-09-26 |
-| 1.8 | Define Interview & Debrief API endpoints | 2026-09-26 |
-| 1.7 | Define Application CRUD API endpoints | 2026-09-26 |
-| 1.6 | Define Auth API endpoints | 2026-09-26 |
-| 1.5 | Define database relationships and index strategy | 2026-09-26 |
-| 1.4 | Define InterviewQuestion and ProblemLog schemas | 2026-09-26 |
-| 1.3 | Define InterviewRound collection schema | 2026-09-26 |
-| 1.2 | Define Application collection schema | 2026-09-26 |
-| 1.1 | Define User collection schema | 2026-09-26 |
 
 ---
 
@@ -111,7 +103,7 @@ None.
 |---|---|---|---|
 | 📄 Documentation complete | 11/11 | Phase 0 | ✅ Complete |
 | 📐 Architecture complete | 15/15 | Phase 1 | ✅ Complete |
-| 🔐 Auth working (end-to-end) | 6/36 | Phase 2 | 🟡 In Progress |
+| 🔐 Auth working (end-to-end) | 8/36 | Phase 2 | 🟡 In Progress |
 | 📋 Pipeline working (Kanban + Table) | 0/31 | Phase 3 | ⬜ |
 | ⏰ Stale + Action Center working | 0/9 | Phase 4 | ⬜ |
 | 🎤 Debrief flow working | 0/19 | Phase 5 | ⬜ |

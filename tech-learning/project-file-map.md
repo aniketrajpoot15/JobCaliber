@@ -312,9 +312,19 @@ cp .env.example .env    # Create your local .env from the template
 
 | File | Purpose | Created in |
 |---|---|---|
-| `errorHandler.js` | Global error handler — catches all errors and returns consistent JSON | Step 2.8 |
 | `auth.js` | JWT verification middleware — checks the cookie, extracts userId | Step 2.12 |
 | `validate.js` | Validation middleware using express-validator | Step 2.14 |
+
+#### `errorHandler.js` ✅ (Created in Step 2.8)
+
+| Field | Detail |
+|---|---|
+| **What it is** | Global error handler middleware (Stage 10 of the pipeline) |
+| **Why it exists** | Without it, unhandled errors crash the server or leak stack traces to attackers |
+| **What it does** | Catches ALL errors and returns consistent JSON: `{ success: false, message, stack (dev only) }` |
+| **Special handling** | Mongoose CastError → 400, Duplicate key (11000) → 409, ValidationError → 400 with field-level errors |
+| **Security** | Stack traces only included when `NODE_ENV=development`. In production, attackers see no internal details. |
+| **Key rule** | Must be registered LAST in server.js (after all routes). Express recognizes error middleware by its 4-param signature `(err, req, res, next)`. |
 
 ---
 

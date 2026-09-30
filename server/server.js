@@ -20,6 +20,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require('./middleware/mongoSanitize');
+const errorHandler = require('./middleware/errorHandler');
+const connectDB = require('./config/db');
 
 // --- Step 3: Create the Express application ---
 // express() returns an "app" object — the central piece of an Express server.
@@ -156,9 +158,13 @@ app.get('/', (req, res) => {
 });
 
 // ============================================
-// ERROR HANDLER (Stage 10 — added in Step 2.8)
+// ERROR HANDLER (Stage 10)
 // ============================================
-// Future: Global error handler middleware (must be registered LAST)
+// This MUST be the LAST middleware registered.
+// Express recognizes error middleware by its 4-parameter signature:
+//   (err, req, res, next)
+// It catches any error thrown or passed via next(error) in routes.
+app.use(errorHandler);
 
 // --- Define the port ---
 // Read from environment variable first (set in .env).
@@ -166,9 +172,23 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 // --- Start the server ---
-// app.listen() binds the Express app to a TCP port and begins
-// accepting incoming HTTP connections. The callback fires once
-// the server is ready.
-app.listen(PORT, () => {
-  console.log(`JobCaliber server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// PATTERN: Connect to database FIRST, then start listening.
+// If the database connection fails, connectDB() calls process.exit(1)
+// and the server never starts — which is the correct behavior.
+//
+// We use an async IIFE (Immediately Invoked Function Expression)
+// because top-level await is not available in CommonJS modules.
+// An IIFE is a function that runs immediately after being defined:
+//   (async () => { ... })();
+//
+// EXECUTION ORDER:
+//   1. connectDB() → connects to MongoDB (or crashes trying)
+//   2. app.listen() → starts accepting HTTP requests
+//   3. Console log → confirms everything is running
+(async () => {
+  await connectDB();
+
+  app.listen(PORT, () => {
+    console.log(`JobCaliber server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
+})();
