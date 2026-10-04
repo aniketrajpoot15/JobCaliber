@@ -2,9 +2,9 @@
 
 # Mongoose
 
-> **Status:** 🟡 `DESIGNING` — schema blueprints started in Step 1.1  
+> **Status:** 🟢 `IMPLEMENTING` — User model, pre-save hooks, and instance methods implemented in Phase 2  
 > **Category:** ODM (Object Data Modeling)  
-> **Used in:** `docs/Architecture/DATABASE_SCHEMA.md` (schema specs), `server/models/` (future model files)
+> **Used in:** `docs/Architecture/DATABASE_SCHEMA.md` (schema specs), `server/models/` (`User.js`, upcoming models), `server/config/db.js`
 
 ---
 
@@ -408,6 +408,45 @@ If `ProblemLog` only had `roundId`:
 3. Group the results.
 
 By placing `userId` directly on `ProblemLog`, MongoDB filters with `{ userId: 1, topicName: 1 }` in an instantaneous index scan with zero joins.
+
+### Concept 15: Document Middleware (Pre-Save Hooks)
+
+Mongoose middleware (also called pre and post hooks) are functions that get executed during the document lifecycle.
+
+```javascript
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('passwordHash')) {
+    return next();
+  }
+  this.passwordHash = await bcrypt.hash(this.passwordHash, 12);
+  next();
+});
+```
+
+**Key rules for Mongoose hooks:**
+- **Regular function syntax:** Always use `function()` instead of arrow functions `() => {}` because Mongoose binds `this` to the document being saved.
+- **`this.isModified(field)`:** Only perform expensive operations (like hashing) if the field was actually modified.
+- **Execution order:** `pre('validate')` → schema validation → `pre('save')` → database write → `post('save')`.
+
+### Concept 16: Document Instance Methods (`schema.methods`)
+
+Instance methods allow you to add custom helper functions directly to document instances returned from queries.
+
+```javascript
+// Adding an instance method to userSchema
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.passwordHash);
+};
+
+// Calling it on a document instance in your controller:
+const user = await User.findOne({ email }).select('+passwordHash');
+const isMatch = await user.matchPassword(enteredPassword);
+```
+
+**Why use instance methods instead of putting logic in the controller?**
+- **Encapsulation:** The model owns its own security comparison logic.
+- **DRY:** The same method can be reused in login, password update verification, account deletion confirmation, etc.
+- **Timing safety:** `bcrypt.compare` executes in constant time, preventing side-channel timing attacks.
 
 ---
 

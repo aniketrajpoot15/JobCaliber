@@ -4,7 +4,7 @@
 
 > **Granular step-by-step execution plan for building JobCaliber.**  
 > **Last Updated:** 2026-09-26  
-> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (8/36 steps)  
+> **Status:** Phase 0 Complete (11/11 steps) | Phase 1 Complete (15/15 steps) | Phase 2 in progress (12/36 steps)  
 > **Total Steps:** 147  
 > **Reference:** `docs/Research_And_Documentation/PRD.md` for requirements, `docs/Research_And_Documentation/DECISIONS.md` for rationale  
 > **Progress Tracker:** `docs/shared/PROJECT_PROGRESS.md`
@@ -386,7 +386,7 @@
 - **Expected Result:** Exports: STATUS_ENUM, ROUND_TYPE_ENUM, WORK_MODE_ENUM, SOURCE_ENUM, MAX_ACTION_CENTER_ITEMS, DEFAULT_STALE_THRESHOLD_DAYS.
 - **Verification:** Code review — all 7 pipeline statuses present. All 5 round types present.
 - **Learn/Review:** Named constants vs. magic strings, freezing objects with Object.freeze().
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 2.10 — Create User Mongoose schema
 - **Objective:** Create `server/models/User.js` with the schema definition (no hooks yet).
@@ -396,7 +396,7 @@
 - **Expected Result:** Schema with: fullName (required), email (unique, lowercase), password (required, minlength 8, select:false), staleThresholdDays (default 14, min 7, max 45), targetRole, timestamps.
 - **Verification:** Code review — all fields match DATABASE_SCHEMA.md. Password has select:false.
 - **Learn/Review:** Mongoose Schema constructor, field options (required, unique, default, select), timestamps.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 2.11 — Add password hashing pre-save hook to User model
 - **Objective:** Add a Mongoose pre-save middleware that hashes the password with bcrypt.
@@ -406,7 +406,7 @@
 - **Expected Result:** Pre-save hook: if password is modified, hash it with bcrypt (salt rounds = 12).
 - **Verification:** Code review — hook checks `this.isModified('password')`, uses await bcrypt.hash().
 - **Learn/Review:** Mongoose pre-save middleware, bcrypt hashing, salt rounds, why 12 rounds.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 2.12 — Add password comparison method to User model
 - **Objective:** Add a `matchPassword` instance method to the User schema.
@@ -416,7 +416,7 @@
 - **Expected Result:** Method: `userSchema.methods.matchPassword = async function(enteredPassword)` using bcrypt.compare().
 - **Verification:** Code review — method returns boolean, uses await.
 - **Learn/Review:** Mongoose instance methods, bcrypt.compare(), why timing-safe comparison matters.
-- **Status:** `NOT_STARTED`
+- **Status:** `COMPLETED`
 
 ### Step 2.13 — Create JWT utility functions
 - **Objective:** Create `server/utils/jwtUtils.js` with token generation and cookie-setting helpers.

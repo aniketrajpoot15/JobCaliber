@@ -32,11 +32,13 @@ JobCaliber/                    ← PROJECT ROOT (monorepo)
 │   ├── config/                🟡 Database connection
 │   │   └── db.js             ✅ Mongoose connection function
 │   ├── controllers/           ⬜ Route handler logic
-│   ├── middleware/             🟡 NoSQL sanitizer (+ future: auth, error handler)
-│   │   └── mongoSanitize.js   ✅ Custom NoSQL injection defense
+│   ├── middleware/             🟡 NoSQL sanitizer + error handler
+│   │   ├── mongoSanitize.js   ✅ Custom NoSQL injection defense
+│   │   └── errorHandler.js    ✅ Global error handler
 │   ├── models/                ⬜ Mongoose schemas (data shapes)
 │   ├── routes/                ⬜ Express route definitions
-│   ├── utils/                 ⬜ Server utilities & constants
+│   ├── utils/                 🟡 Server utilities & constants
+│   │   └── constants.js       ✅ All enums & system constants
 │   ├── server.js              ✅ Express entry point
 │   ├── package.json           ✅ Backend dependencies & scripts
 │   ├── package-lock.json      🤖 Exact dependency versions
@@ -258,15 +260,26 @@ cp .env.example .env    # Create your local .env from the template
 
 ---
 
-### `server/models/` ⬜ (Not yet created — Step 2.10)
+### `server/models/` 🟡 (Partially created — Step 2.10)
 
-| What will go here | Purpose |
+#### `User.js` ✅ (Created in Step 2.10)
+
+| Field | Detail |
 |---|---|
-| `User.js` | Mongoose schema for users — fields like email, passwordHash, staleThresholdDays |
-| `Application.js` | Schema for job applications — companyName, roleTitle, status, dates |
-| `InterviewRound.js` | Schema for interview rounds — roundType, scheduledDate, debrief data |
-| `InterviewQuestion.js` | Schema for specific questions asked during an interview |
-| `ProblemLog.js` | Schema for logged weaknesses/stumble topics |
+| **What it is** | Mongoose schema defining the shape of user documents in MongoDB |
+| **Why it exists** | The User model is the tenant boundary — every child record belongs to a user. Auth, settings, and data isolation all depend on this model. |
+| **What's inside** | 5 user-defined fields: `fullName`, `email`, `passwordHash`, `targetRole`, `staleThresholdDays`. Plus auto-managed `createdAt`, `updatedAt`, `_id`, `__v`. |
+| **Security features** | `select: false` on passwordHash (excluded from queries by default). `toJSON` transform strips passwordHash and __v from all API responses. |
+| **Created in** | Step 2.10 (schema only — hooks in 2.11, methods in 2.12) |
+
+#### Planned files (not yet created):
+
+| File | Purpose | Created in |
+|---|---|---|
+| `Application.js` | Schema for job applications — companyName, roleTitle, status, dates | Phase 3 |
+| `InterviewRound.js` | Schema for interview rounds — roundType, scheduledDate, debrief data | Phase 5 |
+| `InterviewQuestion.js` | Schema for specific questions asked during an interview | Phase 5 |
+| `ProblemLog.js` | Schema for logged weaknesses/stumble topics | Phase 5 |
 
 ---
 
@@ -328,11 +341,52 @@ cp .env.example .env    # Create your local .env from the template
 
 ---
 
-### `server/utils/` ⬜ (Not yet created — Step 2.9)
+### `server/utils/` 🟡 (Partially created — Step 2.9)
 
-| What will go here | Purpose |
+#### `constants.js` ✅ (Created in Step 2.9)
+
+| Field | Detail |
 |---|---|
-| `constants.js` | All enum values (STATUS_ENUM, ROUND_TYPE_ENUM, etc.) — no magic strings |
+| **What it is** | Single source of truth for all enum values and system constants |
+| **Why it exists** | Eliminates magic strings. Every part of the codebase imports enums from here instead of hardcoding values like `'Applied'` or `'OA / Screening'`. One typo in a hardcoded string causes a silent bug; one import from this file guarantees consistency. |
+| **What it exports** | 15 named exports (7 enum arrays + 8 numeric constants) |
+
+**Enum arrays (frozen with `Object.freeze()`):**
+
+| Export | Count | Values |
+|---|---|---|
+| `STATUS_ENUM` | 7 | Saved, Applied, OA / Screening, Interviewing, Offer, Rejected, Ghosted |
+| `STALEABLE_STATUSES` | 2 | Applied, OA / Screening (subset that can be flagged stale) |
+| `ROUND_TYPE_ENUM` | 5 | Recruiter, Technical, System Design, HR, OA |
+| `WORK_MODE_ENUM` | 4 | '' (not specified), Remote, Hybrid, Onsite |
+| `SOURCE_ENUM` | 8 | '' (not specified), LinkedIn, Naukri, Referral, Company Website, Indeed, AngelList, Other |
+| `QUESTION_CATEGORY_ENUM` | 5 | Technical, System Design, Behavioral, Resume, Other |
+| `PROBLEM_CATEGORY_ENUM` | 4 | Technical, Behavioral, System Design, Custom |
+
+**Numeric constants:**
+
+| Export | Value | Purpose |
+|---|---|---|
+| `MAX_ACTION_CENTER_ITEMS` | 3 | Max triage items shown (PD-07) |
+| `DEFAULT_STALE_THRESHOLD_DAYS` | 14 | Default inactivity threshold (ADR-004) |
+| `MIN_STALE_THRESHOLD_DAYS` | 7 | Minimum configurable threshold |
+| `MAX_STALE_THRESHOLD_DAYS` | 45 | Maximum configurable threshold |
+| `DUPLICATE_DETECTION_WINDOW_DAYS` | 60 | Duplicate check window (ADR-013) |
+| `MIN_DEBRIEFS_FOR_WEAKNESS_PATTERN` | 5 | Guardrail: weakness heatmap (ADR-005) |
+| `MIN_APPS_FOR_RESUME_COHORT` | 15 | Guardrail: resume cohort (ADR-006) |
+| `MIN_APPS_FOR_SOURCE_CONVERSION` | 20 | Guardrail: source analytics (V2) |
+
+**How to use:**
+```javascript
+const { STATUS_ENUM, ROUND_TYPE_ENUM } = require('../utils/constants');
+// Use in Mongoose schema: enum: { values: STATUS_ENUM, message: '...' }
+```
+
+#### Planned files (not yet created):
+
+| File | Purpose | Created in |
+|---|---|---|
+| `jwtUtils.js` | Token generation and cookie-setting helpers | Step 2.13 |
 
 ---
 
